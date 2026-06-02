@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   extractBusinessFromScrape,
+  generateReceptionistPrompts,
   scrapeBusinessSource,
 } from "@/lib/server/onboarding";
 import { ensureVapiAssistantForUser } from "@/lib/server/vapi-assistant";
@@ -31,9 +32,12 @@ export async function startOnboardingAction(formData: FormData) {
 
   const scrape = await scrapeBusinessSource({ websiteUrl, googleBusinessUrl });
   const extracted = await extractBusinessFromScrape(scrape);
+  const prompts = await generateReceptionistPrompts({
+    sourceUrl: scrape.sourceUrl,
+    pages: scrape.pages,
+    extracted,
+  });
 
-  // Store extracted data in query string is too large; store temporarily in DB?
-  // We'll store a draft business row with extracted defaults, then route to review.
   const payload = {
     user_id: user.id,
     business_name: extracted.business_name,
@@ -44,10 +48,8 @@ export async function startOnboardingAction(formData: FormData) {
     phone: extracted.phone,
     address: extracted.address,
     additional_context: extracted.additional_context,
-    first_message:
-      extracted.recommended_first_message ||
-      `Thank you for calling ${extracted.business_name || "our business"}. How can I help you today?`,
-    system_prompt: extracted.recommended_system_prompt,
+    first_message: prompts.first_message,
+    system_prompt: prompts.system_prompt,
   };
 
   const upsertRes = await supabase

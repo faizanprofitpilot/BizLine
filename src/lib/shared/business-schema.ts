@@ -13,3 +13,11 @@ export const businessExtractSchema = z.object({
 
 export type BusinessExtract = z.infer<typeof businessExtractSchema>;
 
+/** Full receptionist instructions generated from scrape + structured fields. */
+export const receptionistPromptSchema = z.object({
+  first_message: z.string().min(1),
+  system_prompt: z.string().min(200),
+});
+
+export type ReceptionistPrompts = z.infer<typeof receptionistPromptSchema>;
+

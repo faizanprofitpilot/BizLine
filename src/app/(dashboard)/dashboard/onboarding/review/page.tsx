@@ -125,8 +125,8 @@ export default async function OnboardingReviewPage({
               <Textarea
                 id="system_prompt"
                 name="system_prompt"
-                rows={8}
-                className="font-mono text-xs"
+                rows={18}
+                className="font-mono text-xs leading-relaxed"
                 defaultValue={business?.system_prompt ?? ""}
               />
             </div>

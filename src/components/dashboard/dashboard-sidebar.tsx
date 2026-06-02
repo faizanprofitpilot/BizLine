@@ -26,7 +26,7 @@ export function DashboardSidebar({ businessName }: { businessName?: string | nul
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-[260px] shrink-0 flex-col bg-[#18181B] text-white">
+    <aside className="flex min-h-dvh w-[260px] shrink-0 flex-col self-stretch bg-[#18181B] text-white">
       <div className="border-b border-white/10 p-6">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-brand text-sm font-bold shadow-soft">

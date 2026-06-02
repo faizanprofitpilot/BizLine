@@ -71,9 +71,11 @@ export async function ensureVapiAssistantForUser(userId: string) {
   const assistantPayload = buildAssistantPayload(business, webhookCredentialId);
 
   if (assistantRow?.vapi_assistant_id) {
-    // Ensure webhook URL + secret are configured for assistants created before auto-setup.
     await vapi.assistants.update({
       id: assistantRow.vapi_assistant_id,
+      name: assistantPayload.name,
+      firstMessage: assistantPayload.firstMessage,
+      model: assistantPayload.model,
       server: assistantPayload.server,
     });
     return assistantRow.vapi_assistant_id;

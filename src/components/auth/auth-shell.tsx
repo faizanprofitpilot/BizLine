@@ -15,10 +15,10 @@ export function AuthShell({
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_0%,rgba(249,115,22,0.35),transparent)]" />
         <Link href="/" className="relative flex items-center gap-2.5">
           <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-brand text-sm font-bold text-white">
-            C
+            B
           </span>
           <span className="font-display text-lg font-semibold text-white">
-            CursorHackathon.xyz
+            Bizline
           </span>
         </Link>
         <div className="relative max-w-md">
@@ -41,9 +41,9 @@ export function AuthShell({
             className="mb-10 inline-flex items-center gap-2 font-display text-lg font-semibold lg:hidden"
           >
             <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-brand text-xs font-bold text-white">
-              C
+              B
             </span>
-            CursorHackathon.xyz
+            Bizline
           </Link>
           <h1 className="font-display text-3xl font-semibold tracking-tight">{title}</h1>
           <p className="mt-2 text-muted-foreground">{subtitle}</p>

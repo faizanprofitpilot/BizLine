@@ -15,11 +15,10 @@ export function MarketingHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
         <Link href="/" className="group flex items-center gap-2">
           <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-brand text-sm font-bold text-white shadow-soft transition-transform group-hover:scale-105">
-            C
+            B
           </span>
           <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-            CursorHackathon
-            <span className="text-muted-foreground">.xyz</span>
+            Bizline
           </span>
         </Link>
 

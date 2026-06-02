@@ -30,11 +30,11 @@ export function DashboardSidebar({ businessName }: { businessName?: string | nul
       <div className="border-b border-white/10 p-6">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-brand text-sm font-bold shadow-soft">
-            C
+            B
           </span>
           <div>
             <div className="font-display text-sm font-semibold leading-tight">
-              CursorHackathon
+              Bizline
             </div>
             <div className="text-xs text-white/45">Operations</div>
           </div>

@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CursorHackathon.xyz — AI Phone Receptionist",
+  title: "Bizline — AI Phone Receptionist",
   description:
     "Turn your website into a 24/7 AI receptionist in under 2 minutes. Never miss another customer call.",
 };

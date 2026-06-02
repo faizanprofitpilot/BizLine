@@ -2,7 +2,7 @@ import "server-only";
 
 import { getVapi } from "@/lib/server/vapi";
 import {
-  ensurePlatformWebhookCredentialId,
+  getPlatformWebhookCredentialIdFromEnv,
   inlineWebhookCredential,
   vapiWebhookServerConfig,
   vapiWebhookUrl,
@@ -62,7 +62,6 @@ function buildAssistantPayload(
     };
   }
 
-  // Fallback: attach HMAC credential inline when credential API is unavailable.
   return {
     ...core,
     credentials: [inlineWebhookCredential()],
@@ -104,7 +103,7 @@ export async function ensureVapiAssistantForUser(userId: string) {
     .maybeSingle();
 
   const vapi = getVapi();
-  const webhookCredentialId = await ensurePlatformWebhookCredentialId(vapi);
+  const webhookCredentialId = getPlatformWebhookCredentialIdFromEnv();
   const assistantPayload = buildAssistantPayload(business, webhookCredentialId);
 
   if (assistantRow?.vapi_assistant_id) {

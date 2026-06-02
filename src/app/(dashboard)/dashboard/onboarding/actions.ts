@@ -104,8 +104,15 @@ export async function saveBusinessReviewAction(formData: FormData) {
 
   if (error) redirect(`/dashboard/onboarding/review?error=${encodeURIComponent(error.message)}`);
 
-  // Create the Vapi assistant automatically after onboarding completes.
-  await ensureVapiAssistantForUser(user.id);
+  try {
+    await ensureVapiAssistantForUser(user.id);
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to create Vapi assistant";
+    redirect(
+      `/dashboard/onboarding/review?error=${encodeURIComponent(message)}`
+    );
+  }
 
   redirect("/dashboard");
 }

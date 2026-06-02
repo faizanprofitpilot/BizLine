@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Check } from "lucide-react";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-layout";
 import { env } from "@/lib/server/env";
 import { getStripe } from "@/lib/server/stripe";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 async function startCheckoutAction(formData: FormData) {
   "use server";
@@ -32,7 +37,6 @@ async function startCheckoutAction(formData: FormData) {
       metadata: { supabase_user_id: user.id },
     });
     customerId = customer.id;
-
     await supabase.from("subscriptions").upsert(
       {
         user_id: user.id,
@@ -82,107 +86,146 @@ async function openPortalAction() {
   redirect(session.url);
 }
 
-function PriceButton({ priceId, label }: { priceId: string; label: string }) {
-  return (
-    <form action={startCheckoutAction}>
-      <input type="hidden" name="priceId" value={priceId} />
-      <button
-        type="submit"
-        className="mt-4 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80"
-      >
-        {label}
-      </button>
-    </form>
-  );
-}
+const plans = [
+  {
+    name: "Starter",
+    price: "$49",
+    minutes: "100 minutes / month",
+    priceId: () => env.stripe.priceStarter(),
+    features: ["AI receptionist", "Call summaries", "Email notifications"],
+    highlight: false,
+  },
+  {
+    name: "Growth",
+    price: "$149",
+    minutes: "500 minutes / month",
+    priceId: () => env.stripe.priceGrowth(),
+    features: [
+      "Everything in Starter",
+      "Priority support",
+      "Advanced call insights",
+    ],
+    highlight: true,
+  },
+  {
+    name: "Pro",
+    price: "$399",
+    minutes: "2,000 minutes / month",
+    priceId: () => env.stripe.pricePro(),
+    features: ["Everything in Growth", "High volume lines", "Dedicated onboarding"],
+    highlight: false,
+  },
+];
 
 export default async function BillingPage({
   searchParams,
 }: {
   searchParams: Promise<{ success?: string; canceled?: string; error?: string }>;
 }) {
+  const { success, canceled, error } = await searchParams;
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return (
-      <main className="mx-auto w-full max-w-3xl px-6 py-10">
-        <p className="text-sm text-muted-foreground">
-          Please <Link href="/login">log in</Link> to manage billing.
-        </p>
-      </main>
-    );
-  }
-
-  const { success, canceled, error } = await searchParams;
-
   const { data: subRow } = await supabase
     .from("subscriptions")
     .select("status, plan, stripe_customer_id")
-    .eq("user_id", user.id)
+    .eq("user_id", user!.id)
     .maybeSingle();
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight">Billing</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        An active subscription is required before we create your receptionist.
-      </p>
-
+    <DashboardPage
+      title="Billing"
+      description="An active subscription unlocks onboarding and your phone line."
+    >
       {success ? (
-        <div className="mt-6 rounded-lg border bg-muted px-4 py-3 text-sm text-muted-foreground">
-          Checkout completed. If your access doesn’t update immediately, refresh in a
-          moment.
-        </div>
+        <Card className="mb-8 border-emerald-200 bg-emerald-50/80 p-5 text-sm text-emerald-900">
+          Checkout complete. Refresh if access doesn&apos;t update immediately.
+        </Card>
       ) : null}
       {canceled ? (
-        <div className="mt-6 rounded-lg border bg-muted px-4 py-3 text-sm text-muted-foreground">
-          Checkout canceled.
-        </div>
+        <Card className="mb-8 p-5 text-sm text-muted-foreground">
+          Checkout canceled. Choose a plan when you&apos;re ready.
+        </Card>
       ) : null}
       {error ? (
-        <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <Card className="mb-8 border-destructive/30 bg-destructive/10 p-5 text-sm text-destructive">
           {error}
-        </div>
+        </Card>
       ) : null}
 
-      <div className="mt-6 rounded-lg border bg-card px-4 py-3 text-sm">
-        <div className="font-medium">Status</div>
-        <div className="mt-1 text-muted-foreground">
-          {subRow?.status ? subRow.status : "No subscription"}
+      <Card className="mb-10 flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Subscription
+          </p>
+          <p className="mt-1 font-display text-2xl font-semibold capitalize">
+            {subRow?.status ?? "No subscription"}
+          </p>
+          {subRow?.plan ? (
+            <p className="text-sm text-muted-foreground">Plan: {subRow.plan}</p>
+          ) : null}
         </div>
-      </div>
-      {subRow?.stripe_customer_id ? (
-        <form action={openPortalAction} className="mt-4">
-          <button
-            type="submit"
-            className="rounded-lg border bg-background px-4 py-2 text-sm font-medium hover:bg-muted"
+        {subRow?.stripe_customer_id ? (
+          <form action={openPortalAction}>
+            <Button type="submit" variant="outline">
+              Manage billing
+            </Button>
+          </form>
+        ) : null}
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {plans.map((plan) => (
+          <Card
+            key={plan.name}
+            hover
+            className={cn(
+              "relative flex flex-col p-8",
+              plan.highlight && "shadow-glow ring-2 ring-primary/25"
+            )}
           >
-            Manage billing
-          </button>
-        </form>
-      ) : null}
-
-      <div className="mt-10 grid gap-4 md:grid-cols-3">
-        <div className="rounded-xl border bg-card p-6">
-          <div className="text-sm font-semibold">Starter</div>
-          <p className="mt-2 text-sm text-muted-foreground">100 minutes / month</p>
-          <PriceButton priceId={env.stripe.priceStarter()} label="Choose Starter" />
-        </div>
-        <div className="rounded-xl border bg-card p-6">
-          <div className="text-sm font-semibold">Growth</div>
-          <p className="mt-2 text-sm text-muted-foreground">500 minutes / month</p>
-          <PriceButton priceId={env.stripe.priceGrowth()} label="Choose Growth" />
-        </div>
-        <div className="rounded-xl border bg-card p-6">
-          <div className="text-sm font-semibold">Pro</div>
-          <p className="mt-2 text-sm text-muted-foreground">2000 minutes / month</p>
-          <PriceButton priceId={env.stripe.pricePro()} label="Choose Pro" />
-        </div>
+            {plan.highlight ? (
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-brand px-4 py-1 text-xs font-semibold text-white">
+                Recommended
+              </span>
+            ) : null}
+            <h3 className="font-display text-2xl font-semibold">{plan.name}</h3>
+            <p className="mt-3 font-display text-4xl font-semibold tracking-tight">
+              {plan.price}
+              <span className="text-base font-normal text-muted-foreground">/mo</span>
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{plan.minutes}</p>
+            <ul className="mt-6 flex-1 space-y-2">
+              {plan.features.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <form action={startCheckoutAction} className="mt-8">
+              <input type="hidden" name="priceId" value={plan.priceId()} />
+              <Button
+                type="submit"
+                variant={plan.highlight ? "default" : "outline"}
+                className="w-full"
+                size="lg"
+              >
+                Choose {plan.name}
+              </Button>
+            </form>
+          </Card>
+        ))}
       </div>
-    </main>
+
+      <p className="mt-8 text-center text-sm text-muted-foreground">
+        Questions?{" "}
+        <Link href="/" className="font-medium text-primary hover:underline">
+          Learn more
+        </Link>
+      </p>
+    </DashboardPage>
   );
 }
-

@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { Globe, MapPin } from "lucide-react";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-layout";
 import { startOnboardingAction } from "@/app/(dashboard)/dashboard/onboarding/actions";
+import { Card } from "@/components/ui/card";
+import { Input, Label } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default async function OnboardingStartPage({
   searchParams,
@@ -10,54 +15,76 @@ export default async function OnboardingStartPage({
   const { error } = await searchParams;
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Onboarding</h1>
-        <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
-          Back to dashboard
-        </Link>
-      </div>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Paste your website URL <span className="font-medium">or</span> your Google Business Profile URL.
-      </p>
+    <DashboardPage
+      title="Set up your receptionist"
+      description="Paste your website or Google Business Profile—we'll learn your business in seconds."
+    >
+      <div className="mx-auto max-w-3xl">
+        {error ? (
+          <div className="mb-8 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-4 text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
 
-      {error ? (
-        <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
+        <div className="grid gap-8 lg:grid-cols-5">
+          <Card className="flex flex-col items-center justify-center p-10 text-center lg:col-span-2">
+            <div className="flex size-20 items-center justify-center rounded-3xl bg-gradient-brand text-white shadow-elevated">
+              <Globe className="size-9" strokeWidth={1.75} />
+            </div>
+            <p className="mt-6 font-display text-xl font-semibold">Step 1</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              We scrape your public business info and draft a receptionist profile.
+            </p>
+          </Card>
+
+          <Card className="p-8 lg:col-span-3">
+            <form action={startOnboardingAction} className="grid gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="websiteUrl">Website URL</Label>
+                <Input
+                  id="websiteUrl"
+                  name="websiteUrl"
+                  type="url"
+                  placeholder="https://yourbusiness.com"
+                />
+              </div>
+
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase tracking-widest">
+                  <span className="bg-card px-3 text-muted-foreground">or</span>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="googleBusinessUrl">Google Business Profile URL</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="googleBusinessUrl"
+                    name="googleBusinessUrl"
+                    type="url"
+                    className="pl-11"
+                    placeholder="https://maps.google.com/..."
+                  />
+                </div>
+              </div>
+
+              <Button type="submit" size="lg" className="mt-2 w-full">
+                Continue — learn my business
+              </Button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              <Link href="/dashboard" className="font-medium text-primary hover:underline">
+                Back to overview
+              </Link>
+            </p>
+          </Card>
         </div>
-      ) : null}
-
-      <form action={startOnboardingAction} className="mt-8 grid gap-5">
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Website URL</span>
-          <input
-            name="websiteUrl"
-            type="url"
-            placeholder="https://example.com"
-            className="h-10 rounded-lg border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
-
-        <div className="text-center text-xs text-muted-foreground">OR</div>
-
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Google Business Profile URL</span>
-          <input
-            name="googleBusinessUrl"
-            type="url"
-            placeholder="https://www.google.com/maps?cid=..."
-            className="h-10 rounded-lg border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
-
-        <button
-          type="submit"
-          className="mt-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80"
-        >
-          Continue
-        </button>
-      </form>
-    </main>
+      </div>
+    </DashboardPage>
   );
 }
-

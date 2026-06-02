@@ -1,7 +1,7 @@
-import Link from "next/link";
-
 import { updatePasswordAction } from "@/app/(auth)/actions";
-import { buttonVariants } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { Button } from "@/components/ui/button";
+import { Input, Label } from "@/components/ui/input";
 
 export default async function UpdatePasswordPage({
   searchParams,
@@ -11,50 +11,41 @@ export default async function UpdatePasswordPage({
   const { error } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6 py-16">
-      <h1 className="text-2xl font-semibold tracking-tight">Choose a new password</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Set a new password for your account.
-      </p>
-
+    <AuthShell
+      title="Choose a new password"
+      subtitle="Use at least 8 characters with a mix of letters and numbers."
+    >
       {error ? (
-        <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
-      <form action={updatePasswordAction} className="mt-6 grid gap-4">
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">New password</span>
-          <input
+      <form action={updatePasswordAction} className="grid gap-5">
+        <div className="grid gap-2">
+          <Label htmlFor="password">New password</Label>
+          <Input
+            id="password"
             name="password"
             type="password"
             required
             autoComplete="new-password"
-            className="h-10 rounded-lg border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-        </label>
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Confirm password</span>
-          <input
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="confirmPassword">Confirm password</Label>
+          <Input
+            id="confirmPassword"
             name="confirmPassword"
             type="password"
             required
             autoComplete="new-password"
-            className="h-10 rounded-lg border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-        </label>
-        <button type="submit" className={buttonVariants({ size: "lg" })}>
+        </div>
+        <Button type="submit" size="lg" className="w-full">
           Update password
-        </button>
+        </Button>
       </form>
-
-      <div className="mt-6 text-sm">
-        <Link href="/login" className="text-primary hover:underline">
-          Back to login
-        </Link>
-      </div>
-    </main>
+    </AuthShell>
   );
 }
-

@@ -1,7 +1,9 @@
 import Link from "next/link";
 
 import { requestPasswordResetAction } from "@/app/(auth)/actions";
-import { buttonVariants } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { Button } from "@/components/ui/button";
+import { Input, Label } from "@/components/ui/input";
 
 export default async function ForgotPasswordPage({
   searchParams,
@@ -11,46 +13,36 @@ export default async function ForgotPasswordPage({
   const { error, sent } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6 py-16">
-      <h1 className="text-2xl font-semibold tracking-tight">Reset password</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        We’ll email you a secure link to set a new password.
-      </p>
-
+    <AuthShell
+      title="Reset password"
+      subtitle="We'll email you a link to choose a new password."
+    >
+      {sent ? (
+        <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-900">
+          Check your email for the reset link.
+        </div>
+      ) : null}
       {error ? (
-        <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
-      {sent ? (
-        <div className="mt-6 rounded-lg border bg-muted px-4 py-3 text-sm text-muted-foreground">
-          If that email exists, we sent a password reset link.
+      <form action={requestPasswordResetAction} className="grid gap-5">
+        <div className="grid gap-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" name="email" type="email" required autoComplete="email" />
         </div>
-      ) : null}
-
-      <form action={requestPasswordResetAction} className="mt-6 grid gap-4">
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Email</span>
-          <input
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            className="h-10 rounded-lg border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
-        <button type="submit" className={buttonVariants({ size: "lg" })}>
+        <Button type="submit" size="lg" className="w-full">
           Send reset link
-        </button>
+        </Button>
       </form>
 
-      <div className="mt-6 text-sm">
-        <Link href="/login" className="text-primary hover:underline">
-          Back to login
+      <p className="mt-8 text-center text-sm">
+        <Link href="/login" className="font-medium text-primary hover:underline">
+          Back to log in
         </Link>
-      </div>
-    </main>
+      </p>
+    </AuthShell>
   );
 }
-

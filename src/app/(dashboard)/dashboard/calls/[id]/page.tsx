@@ -1,7 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-layout";
+import {
+  OutcomeBadge,
+  SentimentBadge,
+  UrgencyBadge,
+} from "@/components/dashboard/call-badges";
+import { AudioPlayer } from "@/components/dashboard/audio-player";
+import { Card } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
 
 export default async function CallDetailPage({
   params,
@@ -9,14 +20,8 @@ export default async function CallDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) notFound();
 
-  // RLS ensures the user can only see their own call.
   const { data: call } = await supabase
     .from("calls")
     .select(
@@ -27,63 +32,64 @@ export default async function CallDetailPage({
 
   if (!call) notFound();
 
+  const durationMin = call.duration
+    ? `${Math.max(1, Math.round(call.duration / 60))} min`
+    : "—";
+
   return (
-    <main className="mx-auto w-full max-w-4xl px-6 py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Call detail</h1>
+    <DashboardPage
+      title="Call detail"
+      description={new Date(call.created_at).toLocaleString()}
+      action={
         <Link
           href="/dashboard/calls"
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
-          Back to call logs
+          <ArrowLeft className="size-4" />
+          All calls
         </Link>
-      </div>
+      }
+    >
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="p-6 lg:col-span-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Caller
+          </p>
+          <p className="mt-2 font-display text-2xl font-semibold">
+            {call.caller_number ?? "Unknown"}
+          </p>
+          <p className="mt-4 text-sm text-muted-foreground">Duration: {durationMin}</p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <OutcomeBadge outcome={call.outcome} />
+            <UrgencyBadge urgency={call.urgency} />
+            <SentimentBadge sentiment={call.sentiment} />
+          </div>
+        </Card>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border bg-card p-5">
-          <div className="text-xs font-medium text-muted-foreground">Date</div>
-          <div className="mt-1 text-sm">{new Date(call.created_at).toLocaleString()}</div>
-        </div>
-        <div className="rounded-xl border bg-card p-5">
-          <div className="text-xs font-medium text-muted-foreground">Caller</div>
-          <div className="mt-1 text-sm">{call.caller_number ?? "Unknown"}</div>
-        </div>
-        <div className="rounded-xl border bg-card p-5">
-          <div className="text-xs font-medium text-muted-foreground">Outcome</div>
-          <div className="mt-1 text-sm">{call.outcome ?? "-"}</div>
-        </div>
-        <div className="rounded-xl border bg-card p-5">
-          <div className="text-xs font-medium text-muted-foreground">Sentiment</div>
-          <div className="mt-1 text-sm">{call.sentiment ?? "-"}</div>
-        </div>
+        <Card className="p-6 lg:col-span-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Summary
+          </p>
+          <p className="mt-3 text-base leading-relaxed text-foreground">
+            {call.summary || "No summary available."}
+          </p>
+        </Card>
       </div>
 
       {call.recording_url ? (
-        <div className="mt-6 rounded-xl border bg-card p-5">
-          <div className="text-sm font-medium">Recording</div>
-          <a
-            href={call.recording_url}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2 block text-sm text-primary hover:underline"
-          >
-            Open recording
-          </a>
+        <div className="mt-6">
+          <AudioPlayer src={call.recording_url} />
         </div>
       ) : null}
 
-      <div className="mt-6 rounded-xl border bg-card p-5">
-        <div className="text-sm font-medium">Summary</div>
-        <p className="mt-2 text-sm text-muted-foreground">{call.summary ?? "-"}</p>
-      </div>
-
-      <div className="mt-6 rounded-xl border bg-card p-5">
-        <div className="text-sm font-medium">Transcript</div>
-        <pre className="mt-3 whitespace-pre-wrap rounded-lg bg-muted p-4 text-xs leading-5">
-          {call.transcript ?? ""}
+      <Card className="mt-6 p-6">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          Transcript
+        </p>
+        <pre className="mt-4 max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl bg-background/80 p-5 font-mono text-sm leading-relaxed text-foreground">
+          {call.transcript?.trim() || "No transcript captured."}
         </pre>
-      </div>
-    </main>
+      </Card>
+    </DashboardPage>
   );
 }
-

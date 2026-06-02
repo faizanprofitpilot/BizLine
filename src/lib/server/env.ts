@@ -6,8 +6,15 @@ function mustGet(key: string): string {
   return value;
 }
 
+const PRODUCTION_APP_URL = "https://cursorhackathon.xyz";
+
 export const env = {
-  appUrl: () => mustGet("APP_URL"),
+  appUrl: () => {
+    const fromEnv = process.env.APP_URL?.trim();
+    if (fromEnv) return fromEnv.replace(/\/$/, "");
+    if (process.env.VERCEL_ENV === "production") return PRODUCTION_APP_URL;
+    throw new Error("Missing required environment variable: APP_URL");
+  },
   supabase: {
     url: () => mustGet("NEXT_PUBLIC_SUPABASE_URL"),
     anonKey: () => mustGet("NEXT_PUBLIC_SUPABASE_ANON_KEY"),

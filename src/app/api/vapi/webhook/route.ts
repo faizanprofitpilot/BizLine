@@ -1,5 +1,4 @@
-import crypto from "crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { zodTextFormat } from "openai/helpers/zod";
 
 import { env } from "@/lib/server/env";
@@ -8,26 +7,13 @@ import { getOpenAI } from "@/lib/server/openai";
 import { getResend } from "@/lib/server/resend";
 import { callClassifySchema } from "@/lib/shared/call-classify-schema";
 
-function safeEqualHex(a: string, b: string) {
-  const aa = Buffer.from(a, "utf8");
-  const bb = Buffer.from(b, "utf8");
-  if (aa.length !== bb.length) return false;
-  return crypto.timingSafeEqual(aa, bb);
-}
-
-function verifyVapiSignature(rawBody: string, signature: string, secret: string) {
-  const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
-  return safeEqualHex(signature, expected);
-}
-
-export async function POST(request: Request) {
-  const rawBody = await request.text();
-  const signature = request.headers.get("x-vapi-signature") ?? "";
-
-  // HMAC-SHA256 of the raw body; matches platform webhook credential (x-vapi-signature, payload {body}).
-  if (!signature || !verifyVapiSignature(rawBody, signature, env.vapi.webhookSecret())) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+export async function POST(request: NextRequest) {
+  const secret = request.nextUrl.searchParams.get("secret");
+  if (secret !== env.vapi.webhookSecret()) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rawBody = await request.text();
 
   const payload = JSON.parse(rawBody) as {
     message?: {

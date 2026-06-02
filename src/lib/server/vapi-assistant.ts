@@ -1,12 +1,7 @@
 import "server-only";
 
 import { getVapi } from "@/lib/server/vapi";
-import {
-  getPlatformWebhookCredentialIdFromEnv,
-  inlineWebhookCredential,
-  vapiWebhookServerConfig,
-  vapiWebhookUrl,
-} from "@/lib/server/vapi-webhook";
+import { vapiWebhookServerConfig } from "@/lib/server/vapi-webhook";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 type BusinessRow = {
@@ -25,7 +20,7 @@ type AssistantPayload = Parameters<
   ReturnType<typeof getVapi>["assistants"]["create"]
 >[0];
 
-function buildAssistantCore(business: BusinessRow): AssistantPayload {
+function buildAssistantPayload(business: BusinessRow): AssistantPayload {
   return {
     name: business.business_name || "AI Receptionist",
     firstMessage:
@@ -46,41 +41,8 @@ function buildAssistantCore(business: BusinessRow): AssistantPayload {
         },
       ],
     },
+    server: vapiWebhookServerConfig(),
   };
-}
-
-function buildAssistantPayload(
-  business: BusinessRow,
-  webhookCredentialId: string | null
-): AssistantPayload {
-  const core = buildAssistantCore(business);
-
-  if (webhookCredentialId) {
-    return {
-      ...core,
-      server: vapiWebhookServerConfig(webhookCredentialId),
-    };
-  }
-
-  return {
-    ...core,
-    credentials: [inlineWebhookCredential()],
-    server: { url: vapiWebhookUrl() },
-  };
-}
-
-async function linkServerCredentialAfterCreate(
-  vapi: ReturnType<typeof getVapi>,
-  assistantId: string,
-  credentialIds: string[] | undefined
-) {
-  const credentialId = credentialIds?.[0];
-  if (!credentialId) return;
-
-  await vapi.assistants.update({
-    id: assistantId,
-    server: vapiWebhookServerConfig(credentialId),
-  });
 }
 
 export async function ensureVapiAssistantForUser(userId: string) {
@@ -103,8 +65,7 @@ export async function ensureVapiAssistantForUser(userId: string) {
     .maybeSingle();
 
   const vapi = getVapi();
-  const webhookCredentialId = getPlatformWebhookCredentialIdFromEnv();
-  const assistantPayload = buildAssistantPayload(business, webhookCredentialId);
+  const assistantPayload = buildAssistantPayload(business);
 
   if (assistantRow?.vapi_assistant_id) {
     await vapi.assistants.update({
@@ -113,18 +74,11 @@ export async function ensureVapiAssistantForUser(userId: string) {
       firstMessage: assistantPayload.firstMessage,
       model: assistantPayload.model,
       server: assistantPayload.server,
-      ...(assistantPayload.credentials
-        ? { credentials: assistantPayload.credentials }
-        : {}),
     });
     return assistantRow.vapi_assistant_id;
   }
 
   const created = await vapi.assistants.create(assistantPayload);
-
-  if (!webhookCredentialId && created.credentialIds?.length) {
-    await linkServerCredentialAfterCreate(vapi, created.id, created.credentialIds);
-  }
 
   await supabaseAdmin.from("assistants").upsert(
     {

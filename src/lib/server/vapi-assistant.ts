@@ -3,7 +3,9 @@ import "server-only";
 import { getVapi } from "@/lib/server/vapi";
 import {
   ensurePlatformWebhookCredentialId,
+  inlineWebhookCredential,
   vapiWebhookServerConfig,
+  vapiWebhookUrl,
 } from "@/lib/server/vapi-webhook";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -19,10 +21,11 @@ type BusinessRow = {
   system_prompt: string | null;
 };
 
-function buildAssistantPayload(
-  business: BusinessRow,
-  webhookCredentialId: string
-): Parameters<ReturnType<typeof getVapi>["assistants"]["create"]>[0] {
+type AssistantPayload = Parameters<
+  ReturnType<typeof getVapi>["assistants"]["create"]
+>[0];
+
+function buildAssistantCore(business: BusinessRow): AssistantPayload {
   return {
     name: business.business_name || "AI Receptionist",
     firstMessage:
@@ -43,8 +46,42 @@ function buildAssistantPayload(
         },
       ],
     },
-    server: vapiWebhookServerConfig(webhookCredentialId),
   };
+}
+
+function buildAssistantPayload(
+  business: BusinessRow,
+  webhookCredentialId: string | null
+): AssistantPayload {
+  const core = buildAssistantCore(business);
+
+  if (webhookCredentialId) {
+    return {
+      ...core,
+      server: vapiWebhookServerConfig(webhookCredentialId),
+    };
+  }
+
+  // Fallback: attach HMAC credential inline when credential API is unavailable.
+  return {
+    ...core,
+    credentials: [inlineWebhookCredential()],
+    server: { url: vapiWebhookUrl() },
+  };
+}
+
+async function linkServerCredentialAfterCreate(
+  vapi: ReturnType<typeof getVapi>,
+  assistantId: string,
+  credentialIds: string[] | undefined
+) {
+  const credentialId = credentialIds?.[0];
+  if (!credentialId) return;
+
+  await vapi.assistants.update({
+    id: assistantId,
+    server: vapiWebhookServerConfig(credentialId),
+  });
 }
 
 export async function ensureVapiAssistantForUser(userId: string) {
@@ -77,11 +114,18 @@ export async function ensureVapiAssistantForUser(userId: string) {
       firstMessage: assistantPayload.firstMessage,
       model: assistantPayload.model,
       server: assistantPayload.server,
+      ...(assistantPayload.credentials
+        ? { credentials: assistantPayload.credentials }
+        : {}),
     });
     return assistantRow.vapi_assistant_id;
   }
 
   const created = await vapi.assistants.create(assistantPayload);
+
+  if (!webhookCredentialId && created.credentialIds?.length) {
+    await linkServerCredentialAfterCreate(vapi, created.id, created.credentialIds);
+  }
 
   await supabaseAdmin.from("assistants").upsert(
     {

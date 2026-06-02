@@ -3,6 +3,7 @@ import "server-only";
 import type { VapiClient } from "@vapi-ai/server-sdk";
 
 import { env } from "@/lib/server/env";
+import { VAPI_API_BASE } from "@/lib/server/vapi";
 
 const PLATFORM_WEBHOOK_CREDENTIAL_NAME = "CursorHackathon Platform Webhook";
 
@@ -14,7 +15,7 @@ export function vapiWebhookUrl(): string {
   return `${base}/api/vapi/webhook`;
 }
 
-function webhookHmacAuthenticationPlan() {
+export function webhookHmacAuthenticationPlan() {
   return {
     type: "hmac" as const,
     secretKey: env.vapi.webhookSecret(),
@@ -25,15 +26,30 @@ function webhookHmacAuthenticationPlan() {
   };
 }
 
-export function vapiWebhookServerConfig(credentialId: string) {
+export function inlineWebhookCredential() {
+  return {
+    provider: "webhook" as const,
+    name: PLATFORM_WEBHOOK_CREDENTIAL_NAME,
+    authenticationPlan: webhookHmacAuthenticationPlan(),
+  };
+}
+
+export function vapiWebhookServerConfig(
+  credentialId: string
+): { url: string; credentialId: string } {
   return {
     url: vapiWebhookUrl(),
     credentialId,
   };
 }
 
+function credentialApiUrl(path = ""): string {
+  const base = VAPI_API_BASE.replace(/\/$/, "");
+  return path ? `${base}/credential/${path}` : `${base}/credential`;
+}
+
 async function listWebhookCredentials(vapi: VapiClient) {
-  const response = await vapi.fetch("/credential", { method: "GET" });
+  const response = await vapi.fetch(credentialApiUrl(), { method: "GET" });
   if (!response.ok) return [];
 
   const body = (await response.json()) as
@@ -45,14 +61,10 @@ async function listWebhookCredentials(vapi: VapiClient) {
 }
 
 async function createWebhookCredential(vapi: VapiClient): Promise<string> {
-  const response = await vapi.fetch("/credential", {
+  const response = await vapi.fetch(credentialApiUrl(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      provider: "webhook",
-      name: PLATFORM_WEBHOOK_CREDENTIAL_NAME,
-      authenticationPlan: webhookHmacAuthenticationPlan(),
-    }),
+    body: JSON.stringify(inlineWebhookCredential()),
   });
 
   if (!response.ok) {
@@ -67,23 +79,34 @@ async function createWebhookCredential(vapi: VapiClient): Promise<string> {
 }
 
 /**
- * Reusable org-level HMAC credential for `x-vapi-signature` verification
- * against `VAPI_WEBHOOK_SECRET` on the raw request body.
+ * Reusable org-level HMAC credential for `x-vapi-signature` verification.
+ * Set `VAPI_WEBHOOK_CREDENTIAL_ID` to skip list/create API calls.
  */
 export async function ensurePlatformWebhookCredentialId(
   vapi: VapiClient
-): Promise<string> {
-  if (cachedWebhookCredentialId) return cachedWebhookCredentialId;
-
-  const existing = (await listWebhookCredentials(vapi)).find(
-    (c) => c.name === PLATFORM_WEBHOOK_CREDENTIAL_NAME
-  );
-  if (existing?.id) {
-    cachedWebhookCredentialId = existing.id;
-    return existing.id;
+): Promise<string | null> {
+  const fromEnv = process.env.VAPI_WEBHOOK_CREDENTIAL_ID?.trim();
+  if (fromEnv) {
+    cachedWebhookCredentialId = fromEnv;
+    return fromEnv;
   }
 
-  const id = await createWebhookCredential(vapi);
-  cachedWebhookCredentialId = id;
-  return id;
+  if (cachedWebhookCredentialId) return cachedWebhookCredentialId;
+
+  try {
+    const existing = (await listWebhookCredentials(vapi)).find(
+      (c) => c.name === PLATFORM_WEBHOOK_CREDENTIAL_NAME
+    );
+    if (existing?.id) {
+      cachedWebhookCredentialId = existing.id;
+      return existing.id;
+    }
+
+    const id = await createWebhookCredential(vapi);
+    cachedWebhookCredentialId = id;
+    return id;
+  } catch (error) {
+    console.error("[vapi-webhook] credential setup failed:", error);
+    return null;
+  }
 }

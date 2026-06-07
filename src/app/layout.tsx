@@ -25,8 +25,9 @@ export const metadata: Metadata = {
   description:
     "Turn your website into a 24/7 AI receptionist in under 2 minutes. Never miss another customer call.",
   icons: {
-    icon: "/Logo.png",
-    apple: "/Logo.png",
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    apple: "/favicon.png",
+    shortcut: "/favicon.png",
   },
 };
 

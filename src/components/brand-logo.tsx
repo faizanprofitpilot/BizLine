@@ -40,7 +40,7 @@ export function BrandLogo({
         width={px}
         height={px}
         className={cn(
-          "shrink-0 rounded-xl shadow-soft transition-transform group-hover:scale-105",
+          "shrink-0 transition-transform group-hover:scale-105",
           imageClassName
         )}
         priority

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Phone, Loader2, PartyPopper } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { formatPhoneNumber } from "@/lib/format-phone";
 
 export function ProvisionButton({
   alreadyProvisioned,
@@ -18,7 +19,8 @@ export function ProvisionButton({
   const [result, setResult] = useState<string | null>(phoneNumber ?? null);
   const [celebrate, setCelebrate] = useState(false);
 
-  const display = result ?? phoneNumber;
+  const raw = result ?? phoneNumber;
+  const display = raw ? formatPhoneNumber(raw) : null;
 
   if (alreadyProvisioned || display) {
     return (

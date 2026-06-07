@@ -87,7 +87,13 @@ export default async function OnboardingReviewPage({
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" name="phone" defaultValue={business?.phone ?? ""} />
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="+1 (555) 123-4567"
+                  defaultValue={business?.phone ?? ""}
+                />
               </div>
             </div>
             <div className="grid gap-2">

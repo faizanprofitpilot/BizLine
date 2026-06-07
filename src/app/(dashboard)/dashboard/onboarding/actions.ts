@@ -8,6 +8,8 @@ import {
   generateReceptionistPrompts,
   scrapeBusinessSource,
 } from "@/lib/server/onboarding";
+import { formatPhoneNumber } from "@/lib/format-phone";
+import { parseBusinessFormData } from "@/lib/server/business-profile";
 import { ensureVapiAssistantForUser } from "@/lib/server/vapi-assistant";
 
 export async function startOnboardingAction(formData: FormData) {
@@ -45,7 +47,7 @@ export async function startOnboardingAction(formData: FormData) {
     google_business_url: googleBusinessUrl ?? null,
     services: extracted.services,
     hours: extracted.hours,
-    phone: extracted.phone,
+    phone: formatPhoneNumber(extracted.phone),
     address: extracted.address,
     additional_context: extracted.additional_context,
     first_message: prompts.first_message,
@@ -74,32 +76,11 @@ export async function saveBusinessReviewAction(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const business_name = String(formData.get("business_name") ?? "").trim();
-  const hours = String(formData.get("hours") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const address = String(formData.get("address") ?? "").trim();
-  const additional_context = String(formData.get("additional_context") ?? "").trim();
-  const first_message = String(formData.get("first_message") ?? "").trim();
-  const system_prompt = String(formData.get("system_prompt") ?? "").trim();
-
-  const servicesRaw = String(formData.get("services") ?? "");
-  const services = servicesRaw
-    .split("\n")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const profile = parseBusinessFormData(formData);
 
   const { error } = await supabase
     .from("businesses")
-    .update({
-      business_name,
-      hours,
-      phone,
-      address,
-      additional_context,
-      first_message,
-      system_prompt,
-      services,
-    })
+    .update(profile)
     .eq("user_id", user.id);
 
   if (error) redirect(`/dashboard/onboarding/review?error=${encodeURIComponent(error.message)}`);

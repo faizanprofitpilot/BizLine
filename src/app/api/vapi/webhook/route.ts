@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { zodTextFormat } from "openai/helpers/zod";
 
+import { formatPhoneNumber } from "@/lib/format-phone";
 import { env } from "@/lib/server/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOpenAI } from "@/lib/server/openai";
@@ -132,7 +133,11 @@ export async function POST(request: NextRequest) {
     subject,
     html: [
       `<h2>${subject}</h2>`,
-      `<p><strong>Caller:</strong> ${message.call?.customer?.number ?? "Unknown"}</p>`,
+      `<p><strong>Caller:</strong> ${
+        message.call?.customer?.number
+          ? formatPhoneNumber(message.call.customer.number)
+          : "Unknown"
+      }</p>`,
       `<p><strong>Summary:</strong> ${classification.summary}</p>`,
       `<p><strong>Outcome:</strong> ${classification.outcome}</p>`,
       `<p><strong>Urgency:</strong> ${classification.urgency}</p>`,

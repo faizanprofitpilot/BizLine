@@ -65,9 +65,9 @@ export function DashboardMockup() {
             </div>
             <div className="space-y-2">
               {[
-                { caller: "(555) 284-1092", outcome: "Appointment", time: "2m ago" },
-                { caller: "(555) 901-4421", outcome: "Lead", time: "18m ago" },
-                { caller: "(555) 773-0088", outcome: "Inquiry", time: "1h ago" },
+                { caller: "+1 (555) 284-1092", outcome: "Appointment", time: "2m ago" },
+                { caller: "+1 (555) 901-4421", outcome: "Lead", time: "18m ago" },
+                { caller: "+1 (555) 773-0088", outcome: "Inquiry", time: "1h ago" },
               ].map((row) => (
                 <div
                   key={row.caller}

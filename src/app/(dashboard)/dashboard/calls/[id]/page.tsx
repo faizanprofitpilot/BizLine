@@ -11,6 +11,7 @@ import {
 import { AudioPlayer } from "@/components/dashboard/audio-player";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
+import { formatPhoneNumber } from "@/lib/format-phone";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -56,7 +57,9 @@ export default async function CallDetailPage({
             Caller
           </p>
           <p className="mt-2 font-display text-2xl font-semibold">
-            {call.caller_number ?? "Unknown"}
+            {call.caller_number
+              ? formatPhoneNumber(call.caller_number)
+              : "Unknown"}
           </p>
           <p className="mt-4 text-sm text-muted-foreground">Duration: {durationMin}</p>
           <div className="mt-6 flex flex-wrap gap-2">

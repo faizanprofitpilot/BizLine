@@ -4,6 +4,7 @@ import { PhoneIncoming } from "lucide-react";
 import { DashboardPage } from "@/components/dashboard/dashboard-layout";
 import { OutcomeBadge } from "@/components/dashboard/call-badges";
 import { Card } from "@/components/ui/card";
+import { formatPhoneNumber } from "@/lib/format-phone";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function CallsPage() {
@@ -61,7 +62,9 @@ export default async function CallsPage() {
                       </Link>
                     </td>
                     <td className="px-6 py-4 text-sm text-foreground">
-                      {c.caller_number ?? "Unknown"}
+                      {c.caller_number
+                        ? formatPhoneNumber(c.caller_number)
+                        : "Unknown"}
                     </td>
                     <td className="px-6 py-4">
                       <OutcomeBadge outcome={c.outcome} />

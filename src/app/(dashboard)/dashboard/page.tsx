@@ -14,6 +14,7 @@ import { ProvisionButton } from "@/components/dashboard/provision-button";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { formatPhoneNumber } from "@/lib/format-phone";
 import { cn } from "@/lib/utils";
 
 export default async function DashboardHomePage() {
@@ -51,7 +52,7 @@ export default async function DashboardHomePage() {
   const minutesUsed = Math.round(
     callList.reduce((sum, c) => sum + (c.duration ?? 0), 0) / 60
   );
-  const activeNumber = assistant?.twilio_phone_number ?? "Not provisioned";
+  const activeNumber = assistant?.twilio_phone_number ?? null;
 
   const recent = [...callList]
     .sort(
@@ -98,11 +99,7 @@ export default async function DashboardHomePage() {
         <KpiCard
           label="Active number"
           value={assistant?.active ? "Live" : "Pending"}
-          hint={
-            typeof activeNumber === "string" && activeNumber.length > 12
-              ? activeNumber
-              : "Provision to go live"
-          }
+          hint={activeNumber ? formatPhoneNumber(activeNumber) : "Status"}
           icon={Phone}
         />
       </div>

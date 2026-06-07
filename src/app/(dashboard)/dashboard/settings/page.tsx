@@ -45,7 +45,7 @@ export default async function SettingsPage({
       ) : null}
       {rescraped ? (
         <Card className="mb-8 border-primary/20 bg-accent/40 p-5 text-sm text-accent-foreground">
-          Profile refreshed from your website. Review the fields below, then click
+          Profile refreshed from your website. Review the fields above, then click
           Save changes to update your live receptionist.
         </Card>
       ) : null}
@@ -54,63 +54,6 @@ export default async function SettingsPage({
           {error}
         </Card>
       ) : null}
-
-      <Card className="mb-8 p-8">
-        <h2 className="font-display text-xl font-semibold">Refresh from website</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Re-scrape your website to update business details and AI instructions. Changes
-          apply to your live receptionist after you save.
-        </p>
-
-        {!business ? (
-          <p className="mt-6 text-sm text-muted-foreground">
-            Complete{" "}
-            <Link href="/dashboard/onboarding" className="font-medium text-primary hover:underline">
-              onboarding
-            </Link>{" "}
-            first to set up your business profile.
-          </p>
-        ) : (
-          <form action={rescrapeSettingsAction} className="mt-6 grid gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="websiteUrl">Website URL</Label>
-              <Input
-                id="websiteUrl"
-                name="websiteUrl"
-                type="url"
-                placeholder="https://yourbusiness.com"
-                defaultValue={business.website ?? ""}
-              />
-            </div>
-
-            <div className="relative py-1">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-widest">
-                <span className="bg-card px-3 text-muted-foreground">or</span>
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="googleBusinessUrl">Google Business Profile URL</Label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="googleBusinessUrl"
-                  name="googleBusinessUrl"
-                  type="url"
-                  className="pl-11"
-                  placeholder="https://maps.google.com/..."
-                  defaultValue={business.google_business_url ?? ""}
-                />
-              </div>
-            </div>
-
-            <RescrapeSubmitButton />
-          </form>
-        )}
-      </Card>
 
       {business ? (
         <form action={saveSettingsAction} className="grid gap-6 lg:grid-cols-2">
@@ -229,7 +172,66 @@ export default async function SettingsPage({
             <SaveSettingsSubmitButton />
           </div>
         </form>
-      ) : null}
+      ) : (
+        <Card className="mb-8 p-8">
+          <p className="text-sm text-muted-foreground">
+            Complete{" "}
+            <Link href="/dashboard/onboarding" className="font-medium text-primary hover:underline">
+              onboarding
+            </Link>{" "}
+            first to set up your business profile.
+          </p>
+        </Card>
+      )}
+
+      <Card className="mt-8 p-8">
+        <h2 className="font-display text-xl font-semibold">Refresh from website</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Re-scrape your website to update business details and AI instructions. Changes
+          apply to your live receptionist after you save.
+        </p>
+
+        {business ? (
+          <form action={rescrapeSettingsAction} className="mt-6 grid gap-6">
+            <div className="grid gap-2">
+              <Label htmlFor="websiteUrl">Website URL</Label>
+              <Input
+                id="websiteUrl"
+                name="websiteUrl"
+                type="url"
+                placeholder="https://yourbusiness.com"
+                defaultValue={business.website ?? ""}
+              />
+            </div>
+
+            <div className="relative py-1">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase tracking-widest">
+                <span className="bg-card px-3 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="googleBusinessUrl">Google Business Profile URL</Label>
+              <div className="relative">
+                <MapPin className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="googleBusinessUrl"
+                  name="googleBusinessUrl"
+                  type="url"
+                  className="pl-11"
+                  placeholder="https://maps.google.com/..."
+                  defaultValue={business.google_business_url ?? ""}
+                />
+              </div>
+            </div>
+
+            <RescrapeSubmitButton />
+          </form>
+        ) : null}
+      </Card>
     </DashboardPage>
   );
 }

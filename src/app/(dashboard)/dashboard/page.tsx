@@ -9,15 +9,25 @@ import {
 import {
   DashboardPage,
 } from "@/components/dashboard/dashboard-layout";
+import { DateRangeFilter } from "@/components/dashboard/date-range-filter";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { ProvisionButton } from "@/components/dashboard/provision-button";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { buildDateRangeQuery, parseDateRange } from "@/lib/date-range";
 import { formatPhoneNumber } from "@/lib/format-phone";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
-export default async function DashboardHomePage() {
+export default async function DashboardHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
+}) {
+  const { range, from, to } = await searchParams;
+  const dateRange = parseDateRange({ range, from, to });
+  const rangeQuery = buildDateRangeQuery(dateRange, from, to);
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -37,12 +47,21 @@ export default async function DashboardHomePage() {
         .maybeSingle()
     : { data: null };
 
-  const { data: calls } = business?.id
-    ? await supabase
+  let callsQuery = business?.id
+    ? supabase
         .from("calls")
         .select("id, duration, outcome, created_at")
         .eq("business_id", business.id)
-    : { data: [] };
+    : null;
+
+  if (callsQuery && dateRange.start) {
+    callsQuery = callsQuery.gte("created_at", dateRange.start.toISOString());
+  }
+  if (callsQuery && dateRange.end) {
+    callsQuery = callsQuery.lte("created_at", dateRange.end.toISOString());
+  }
+
+  const { data: calls } = callsQuery ? await callsQuery : { data: [] };
 
   const callList = calls ?? [];
   const callsAnswered = callList.length;
@@ -76,11 +95,20 @@ export default async function DashboardHomePage() {
         ) : null
       }
     >
+      <div className="mb-6">
+        <DateRangeFilter
+          basePath="/dashboard"
+          activeRange={dateRange.key}
+          from={from}
+          to={to}
+        />
+      </div>
+
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label="Calls answered"
           value={String(callsAnswered)}
-          hint="All time"
+          hint={dateRange.label}
           icon={PhoneIncoming}
           accent
         />
@@ -132,12 +160,14 @@ export default async function DashboardHomePage() {
             </ul>
           ) : (
             <div className="px-6 py-12 text-center text-muted-foreground">
-              No calls yet. Provision your number and place a test call.
+              {dateRange.key !== "all"
+                ? "No calls in this date range."
+                : "No calls yet. Provision your number and place a test call."}
             </div>
           )}
           <div className="border-t border-border px-6 py-3">
             <Link
-              href="/dashboard/calls"
+              href={`/dashboard/calls${rangeQuery}`}
               className="text-sm font-medium text-primary hover:underline"
             >
               View all calls
@@ -169,7 +199,7 @@ export default async function DashboardHomePage() {
                 Receptionist settings
               </Link>
               <Link
-                href="/dashboard/calls"
+                href={`/dashboard/calls${rangeQuery}`}
                 className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "justify-start")}
               >
                 View all calls

@@ -26,6 +26,12 @@ function buildAssistantPayload(business: BusinessRow): AssistantPayload {
     firstMessage:
       business.first_message ||
       `Thank you for calling ${business.business_name || "our business"}. How can I help you today?`,
+    artifactPlan: {
+      recordingEnabled: true,
+      recordingFormat: "mp3",
+      loggingEnabled: true,
+      transcriptPlan: { enabled: true },
+    },
     model: {
       provider: "openai",
       model: "gpt-4o",
@@ -72,6 +78,7 @@ export async function ensureVapiAssistantForUser(userId: string) {
       id: assistantRow.vapi_assistant_id,
       name: assistantPayload.name,
       firstMessage: assistantPayload.firstMessage,
+      artifactPlan: assistantPayload.artifactPlan,
       model: assistantPayload.model,
       server: assistantPayload.server,
     });

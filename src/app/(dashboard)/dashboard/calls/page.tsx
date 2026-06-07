@@ -1,4 +1,4 @@
-import { PhoneIncoming } from "lucide-react";
+import { Mic, PhoneIncoming } from "lucide-react";
 
 import { DashboardPage } from "@/components/dashboard/dashboard-layout";
 import { OutcomeBadge } from "@/components/dashboard/call-badges";
@@ -31,7 +31,7 @@ export default async function CallsPage({
   let callsQuery = business?.id
     ? supabase
         .from("calls")
-        .select("id, created_at, caller_number, duration, outcome, summary")
+        .select("id, created_at, caller_number, duration, outcome, summary, recording_url")
         .eq("business_id", business.id)
         .order("created_at", { ascending: false })
         .limit(50)
@@ -88,8 +88,16 @@ export default async function CallsPage({
                     <td className="px-6 py-4">
                       <OutcomeBadge outcome={c.outcome} />
                     </td>
-                    <td className="max-w-md truncate px-6 py-4 text-sm text-muted-foreground">
-                      {c.summary ?? "—"}
+                    <td className="max-w-md px-6 py-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-2">
+                        {c.recording_url ? (
+                          <Mic
+                            className="size-3.5 shrink-0 text-primary"
+                            aria-label="Recording available"
+                          />
+                        ) : null}
+                        <span className="truncate">{c.summary ?? "—"}</span>
+                      </span>
                     </td>
                   </CallTableRow>
                 ))

@@ -6,6 +6,10 @@ import { env } from "@/lib/server/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOpenAI } from "@/lib/server/openai";
 import { getResend } from "@/lib/server/resend";
+import {
+  computeCallDurationSeconds,
+  extractRecordingUrl,
+} from "@/lib/server/vapi-recording";
 import { callClassifySchema } from "@/lib/shared/call-classify-schema";
 
 export async function POST(request: NextRequest) {
@@ -19,10 +23,15 @@ export async function POST(request: NextRequest) {
   const payload = JSON.parse(rawBody) as {
     message?: {
       type?: string;
-      call?: { id?: string; assistantId?: string; customer?: { number?: string } };
+      call?: {
+        id?: string;
+        assistantId?: string;
+        customer?: { number?: string };
+        startedAt?: string;
+        endedAt?: string;
+      };
       artifact?: {
         transcript?: string;
-        recording?: { url?: string };
       };
     };
   };
@@ -52,7 +61,11 @@ export async function POST(request: NextRequest) {
   }
 
   const transcript = message.artifact?.transcript ?? "";
-  const recordingUrl = message.artifact?.recording?.url ?? null;
+  const recordingUrl = extractRecordingUrl(message.artifact);
+  const duration = computeCallDurationSeconds(
+    message.call?.startedAt,
+    message.call?.endedAt
+  );
 
   const { data: insertedCall, error: insertError } = await supabaseAdmin
     .from("calls")
@@ -61,6 +74,7 @@ export async function POST(request: NextRequest) {
       caller_number: message.call?.customer?.number ?? null,
       transcript,
       recording_url: recordingUrl,
+      duration,
     })
     .select("id")
     .single();

@@ -79,11 +79,18 @@ export default async function CallDetailPage({
         </Card>
       </div>
 
-      {call.recording_url ? (
-        <div className="mt-6">
+      <div className="mt-6">
+        {call.recording_url ? (
           <AudioPlayer src={call.recording_url} />
-        </div>
-      ) : null}
+        ) : (
+          <Card className="p-6">
+            <p className="text-sm font-semibold text-foreground">Recording</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              No recording available for this call.
+            </p>
+          </Card>
+        )}
+      </div>
 
       <Card className="mt-6 p-6">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">

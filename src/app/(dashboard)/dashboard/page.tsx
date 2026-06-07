@@ -67,10 +67,10 @@ export default async function DashboardHomePage() {
       action={
         !assistant?.twilio_phone_number ? (
           <Link
-            href="/dashboard/onboarding"
+            href="/dashboard/onboarding/live"
             className={cn(buttonVariants({ variant: "outline" }))}
           >
-            Complete setup
+            Finish setup
           </Link>
         ) : null
       }
@@ -166,16 +166,16 @@ export default async function DashboardHomePage() {
             <h2 className="font-display text-lg font-semibold">Quick actions</h2>
             <div className="mt-4 flex flex-col gap-2">
               <Link
-                href="/dashboard/onboarding"
+                href="/dashboard/settings"
                 className={cn(buttonVariants({ variant: "outline", size: "sm" }), "justify-start")}
               >
-                Run onboarding
+                Receptionist settings
               </Link>
               <Link
-                href="/dashboard/settings"
+                href="/dashboard/calls"
                 className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "justify-start")}
               >
-                Receptionist settings
+                View all calls
               </Link>
             </div>
           </Card>

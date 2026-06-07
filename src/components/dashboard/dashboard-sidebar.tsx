@@ -7,17 +7,16 @@ import {
   LayoutDashboard,
   Phone,
   Settings,
-  Sparkles,
   LogOut,
 } from "lucide-react";
 
 import { logoutAction } from "@/app/(auth)/actions";
+import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/calls", label: "Calls", icon: Phone },
-  { href: "/dashboard/onboarding", label: "Onboarding", icon: Sparkles },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
 ];
@@ -26,25 +25,22 @@ export function DashboardSidebar({ businessName }: { businessName?: string | nul
   const pathname = usePathname();
 
   return (
-    <aside className="flex min-h-dvh w-[260px] shrink-0 flex-col self-stretch bg-[#18181B] text-white">
-      <div className="border-b border-white/10 p-6">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-brand text-sm font-bold shadow-soft">
-            B
-          </span>
-          <div>
-            <div className="font-display text-sm font-semibold leading-tight">
-              Bizline
-            </div>
-            <div className="text-xs text-white/45">Operations</div>
-          </div>
-        </Link>
+    <aside className="sticky top-0 flex h-dvh w-[260px] shrink-0 flex-col overflow-hidden bg-[#18181B] text-white">
+      <div className="shrink-0 border-b border-white/10 p-6">
+        <BrandLogo
+          href="/dashboard"
+          size="md"
+          subtitle="Operations"
+          imageClassName="group-hover:scale-100"
+          wordmarkClassName="text-white"
+          subtitleClassName="text-white/45"
+        />
         {businessName ? (
           <p className="mt-4 truncate text-sm text-white/70">{businessName}</p>
         ) : null}
       </div>
 
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4">
         {nav.map((item) => {
           const active = item.exact
             ? pathname === item.href
@@ -68,7 +64,7 @@ export function DashboardSidebar({ businessName }: { businessName?: string | nul
         })}
       </nav>
 
-      <div className="border-t border-white/10 p-4">
+      <div className="shrink-0 border-t border-white/10 p-4">
         <form action={logoutAction}>
           <button
             type="submit"

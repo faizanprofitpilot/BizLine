@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BrandLogo } from "@/components/brand-logo";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -13,14 +14,11 @@ export function MarketingHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
-        <Link href="/" className="group flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-brand text-sm font-bold text-white shadow-soft transition-transform group-hover:scale-105">
-            B
-          </span>
-          <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-            Bizline
-          </span>
-        </Link>
+        <BrandLogo
+          size="sm"
+          wordmark="BizLine"
+          wordmarkClassName="text-lg text-foreground"
+        />
 
         <nav className="hidden items-center gap-8 md:flex">
           {nav.map((item) => (

@@ -7,7 +7,7 @@ import { env } from "@/lib/server/env";
 import { getStripe } from "@/lib/server/stripe";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 async function startCheckoutAction(formData: FormData) {
@@ -140,8 +140,16 @@ export default async function BillingPage({
       description="An active subscription unlocks onboarding and your phone line."
     >
       {success ? (
-        <Card className="mb-8 border-emerald-200 bg-emerald-50/80 p-5 text-sm text-emerald-900">
-          Checkout complete. Refresh if access doesn&apos;t update immediately.
+        <Card className="mb-8 flex flex-col gap-4 border-emerald-200 bg-emerald-50/80 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-emerald-900">
+            Checkout complete. Refresh if access doesn&apos;t update immediately.
+          </p>
+          <Link
+            href="/dashboard/onboarding"
+            className={cn(buttonVariants({ size: "sm" }), "shrink-0 bg-emerald-700 hover:bg-emerald-800")}
+          >
+            Set up your receptionist
+          </Link>
         </Card>
       ) : null}
       {canceled ? (

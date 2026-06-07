@@ -22,7 +22,7 @@ export async function DashboardLayout({
     .maybeSingle();
 
   return (
-    <div className="flex min-h-dvh items-stretch bg-background">
+    <div className="flex min-h-dvh bg-background">
       <DashboardSidebar businessName={business?.business_name} />
       <div className="flex min-w-0 flex-1 flex-col">{children}</div>
     </div>

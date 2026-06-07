@@ -6,7 +6,7 @@ function mustGet(key: string): string {
   return value;
 }
 
-const PRODUCTION_APP_URL = "https://cursorhackathon.xyz";
+const PRODUCTION_APP_URL = "https://getbizline.xyz";
 
 export const env = {
   appUrl: () => {

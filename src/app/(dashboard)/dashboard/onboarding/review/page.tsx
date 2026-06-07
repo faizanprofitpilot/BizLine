@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { DashboardPage } from "@/components/dashboard/dashboard-layout";
 import { saveBusinessReviewAction } from "@/app/(dashboard)/dashboard/onboarding/actions";
 import { Card } from "@/components/ui/card";
 import { Input, Label, Textarea } from "@/components/ui/input";
@@ -27,17 +26,14 @@ export default async function OnboardingReviewPage({
     .maybeSingle();
 
   return (
-    <DashboardPage
-      title="Your AI receptionist profile"
-      description="Step 3 — review and refine. Every field shapes how callers are greeted."
-    >
+    <>
       {error ? (
         <div className="mb-8 max-w-3xl rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-4 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
-      <Card className="max-w-4xl p-8 lg:p-10">
+      <Card className="mx-auto max-w-4xl p-8 lg:p-10">
         <form action={saveBusinessReviewAction} className="grid gap-8">
           <section className="grid gap-4">
             <h2 className="font-display text-xl font-semibold">Business identity</h2>
@@ -145,6 +141,6 @@ export default async function OnboardingReviewPage({
           </div>
         </form>
       </Card>
-    </DashboardPage>
+    </>
   );
 }

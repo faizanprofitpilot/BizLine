@@ -24,6 +24,10 @@ export const metadata: Metadata = {
   title: "Bizline — AI Phone Receptionist",
   description:
     "Turn your website into a 24/7 AI receptionist in under 2 minutes. Never miss another customer call.",
+  icons: {
+    icon: "/Logo.png",
+    apple: "/Logo.png",
+  },
 };
 
 export default function RootLayout({

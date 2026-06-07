@@ -114,6 +114,6 @@ export async function saveBusinessReviewAction(formData: FormData) {
     );
   }
 
-  redirect("/dashboard");
+  redirect("/dashboard/onboarding/live");
 }
 

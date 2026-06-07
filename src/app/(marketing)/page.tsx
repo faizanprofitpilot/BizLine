@@ -18,12 +18,6 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-const stats = [
-  { value: "2,400+", label: "Businesses onboarded" },
-  { value: "186k", label: "Calls handled" },
-  { value: "1.2M", label: "Minutes answered" },
-];
-
 const steps = [
   {
     n: "01",
@@ -144,22 +138,6 @@ export default function MarketingHomePage() {
           <div className="animate-fade-up-delay-2 lg:justify-self-end">
             <HeroFlowVisual />
           </div>
-        </div>
-      </section>
-
-      {/* Social proof */}
-      <section className="border-y border-border bg-card/60">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 sm:grid-cols-3 lg:px-10">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center sm:text-left">
-              <div className="font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-                {s.value}
-              </div>
-              <div className="mt-2 text-sm font-medium text-muted-foreground">
-                {s.label}
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 

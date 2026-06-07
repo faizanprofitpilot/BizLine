@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { PhoneIncoming } from "lucide-react";
 
 import { DashboardPage } from "@/components/dashboard/dashboard-layout";
 import { OutcomeBadge } from "@/components/dashboard/call-badges";
+import { CallTableRow } from "@/components/dashboard/call-table-row";
 import { Card } from "@/components/ui/card";
 import { formatPhoneNumber } from "@/lib/format-phone";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -49,17 +49,9 @@ export default async function CallsPage() {
             <tbody>
               {rows.length ? (
                 rows.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="border-b border-border/80 transition-colors last:border-0 hover:bg-muted/20"
-                  >
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/dashboard/calls/${c.id}`}
-                        className="font-medium text-foreground hover:text-primary"
-                      >
-                        {new Date(c.created_at).toLocaleString()}
-                      </Link>
+                  <CallTableRow key={c.id} id={c.id}>
+                    <td className="px-6 py-4 font-medium text-foreground">
+                      {new Date(c.created_at).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-sm text-foreground">
                       {c.caller_number
@@ -72,7 +64,7 @@ export default async function CallsPage() {
                     <td className="max-w-md truncate px-6 py-4 text-sm text-muted-foreground">
                       {c.summary ?? "—"}
                     </td>
-                  </tr>
+                  </CallTableRow>
                 ))
               ) : (
                 <tr>

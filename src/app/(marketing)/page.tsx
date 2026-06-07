@@ -4,6 +4,7 @@ import {
   Bell,
   BookOpen,
   Calendar,
+  Check,
   FileText,
   Mail,
   MessageSquare,
@@ -44,39 +45,33 @@ const steps = [
 const features = [
   {
     title: "Call summaries",
-    desc: "Instant AI summaries after every conversation.",
+    desc: "AI summary after every call, with outcome, urgency, and sentiment.",
     icon: MessageSquare,
-    className: "md:col-span-2 md:row-span-1",
   },
   {
     title: "Full transcripts",
-    desc: "Searchable transcripts with sentiment and urgency.",
+    desc: "Complete transcripts saved in your dashboard for every conversation.",
     icon: FileText,
-    className: "md:col-span-1",
   },
   {
     title: "AI receptionist",
-    desc: "Natural voice that represents your brand.",
+    desc: "A dedicated voice line that answers calls around the clock.",
     icon: Sparkles,
-    className: "md:col-span-1",
   },
   {
     title: "Business knowledge",
-    desc: "Trained on your website and business details.",
+    desc: "Onboarding pulls from your website—you review and edit before going live.",
     icon: BookOpen,
-    className: "md:col-span-1 md:row-span-2",
   },
   {
-    title: "Appointment requests",
-    desc: "Capture booking intent and follow-up details.",
+    title: "Lead & booking capture",
+    desc: "Calls are classified so you can spot leads and appointment requests quickly.",
     icon: Calendar,
-    className: "md:col-span-1",
   },
   {
     title: "Email notifications",
-    desc: "Beautiful summaries delivered to your inbox.",
+    desc: "Summary email sent to your account when a call ends.",
     icon: Mail,
-    className: "md:col-span-2",
   },
 ];
 
@@ -84,20 +79,38 @@ const plans = [
   {
     name: "Starter",
     price: "$49",
-    minutes: "100 min / month",
+    minutes: "100 minutes / month",
     highlight: false,
+    features: [
+      "1 AI receptionist",
+      "1 dedicated phone number",
+      "Website or Google Business onboarding",
+      "Call summaries & full transcripts",
+      "Email notification per call",
+      "Dashboard call history",
+    ],
   },
   {
     name: "Growth",
     price: "$149",
-    minutes: "500 min / month",
+    minutes: "500 minutes / month",
     highlight: true,
+    features: [
+      "Everything in Starter",
+      "5× more included minutes",
+      "Same receptionist, number, and dashboard",
+    ],
   },
   {
     name: "Pro",
     price: "$399",
-    minutes: "2,000 min / month",
+    minutes: "2,000 minutes / month",
     highlight: false,
+    features: [
+      "Everything in Starter",
+      "20× more included minutes",
+      "Built for higher call volume",
+    ],
   },
 ];
 
@@ -234,17 +247,13 @@ export default function MarketingHomePage() {
             Everything a modern receptionist should do
           </h2>
         </div>
-        <div className="mt-14 grid gap-4 md:grid-cols-3 md:auto-rows-[minmax(160px,auto)]">
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => {
             const Icon = f.icon;
             return (
-              <Card
-                key={f.title}
-                hover
-                className={cn("flex flex-col justify-between p-8", f.className)}
-              >
+              <Card key={f.title} hover className="flex h-full flex-col p-8">
                 <Icon className="size-8 text-primary" strokeWidth={1.75} />
-                <div className="mt-8">
+                <div className="mt-6 flex flex-1 flex-col">
                   <h3 className="font-display text-xl font-semibold">{f.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {f.desc}
@@ -287,6 +296,17 @@ export default function MarketingHomePage() {
                 <span className="text-base font-normal text-muted-foreground">/mo</span>
               </p>
               <p className="mt-2 text-sm text-muted-foreground">{plan.minutes}</p>
+              <ul className="mt-6 flex-1 space-y-2.5">
+                {plan.features.map((feature) => (
+                  <li
+                    key={feature}
+                    className="flex items-start gap-2 text-sm text-muted-foreground"
+                  >
+                    <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
               <Link
                 href="/signup"
                 className={cn(

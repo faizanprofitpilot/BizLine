@@ -42,3 +42,6 @@ yarn-error.log*
 next-env.d.ts
 .recovery/
 supabase/.temp/
+
+# Unused design source (hero uses hero-bg.png)
+public/Warm Orange AI Receptionist Storefront.png

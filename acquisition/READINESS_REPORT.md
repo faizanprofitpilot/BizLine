@@ -7,21 +7,24 @@
 
 ## Verdict
 
-**GO WITH DISCLOSURES** (improved commercial controls; live Stripe cutover still needs seller approval)
+**GO WITH DISCLOSURES** — product/usage controls are live; **Stripe live cutover is not complete**
 
-Code now enforces:
+### Verified 24 Nov 2026 (post seller credential update)
 
-- Server-side Stripe price allowlisting
-- Subscription rows not writable by authenticated clients (RLS)
-- Stripe webhook idempotency + period/plan sync
-- Atomic call-minute reservations via `assistant-request`
-- Dashboard usage meter
+| Integration | Result | Notes |
+|-------------|--------|-------|
+| Resend domain `getbizline.xyz` | **PASS** | status=`verified` |
+| `RESEND_FROM_EMAIL` | **PASS** | `BizLine <notifications@getbizline.xyz>` |
+| Resend delivery (external Gmail) | **PASS** | API `last_event=delivered` |
+| Live Stripe products Starter $49 / Growth $149 | **PASS** | Live prices exist and match |
+| Live Stripe Pro $399 | **FAIL in `.env.local`** | `STRIPE_PRICE_PRO` points to **BizDial Pro $999**, not BizLine Pro $399 |
+| `STRIPE_SECRET_KEY` live | **FAIL in `.env.local`** | Still `sk_test_…` (no `sk_live_` present) |
+| Live webhook `getbizline.xyz/api/stripe/webhook` | **PASS** | enabled in live mode with required events |
+| Stripe env sync to Vercel Production | **BLOCKED** | Would not publish `sk_test_` or wrong Pro price as “live” |
+| Minute enforcement RPCs | **PASS** | `reserve/commit/release_call_usage` present |
+| Demo `+15513105356` | **PASS** | `is_demo=true`, active, still on homepage |
 
-Remaining seller actions before treating live payments as fully verified:
-
-1. Create **live-mode** BizLine prices ($49 / $149 / $399) — CLI restricted key lacked `product_write`
-2. Set Vercel Production `STRIPE_SECRET_KEY` to `sk_live_…` and live price IDs + live webhook secret
-3. Confirm Resend domain `getbizline.xyz` and set `RESEND_FROM_EMAIL` to a verified sender (API listing was blocked from this environment with Cloudflare 1010)
+**Required before live Checkout:** put `sk_live_…` in `.env.local`, set `STRIPE_PRICE_PRO` to the live BizLine Pro **$399** price (not BizDial), put the live webhook signing secret in `STRIPE_WEBHOOK_SECRET`, then re-run Production env sync.
 
 ---
 

@@ -123,14 +123,14 @@ begin
     return;
   end if;
 
-  select * into existing from public.call_usage where vapi_call_id = p_vapi_call_id;
+  select * into existing from public.call_usage cu where cu.vapi_call_id = p_vapi_call_id;
   if found then
     if existing.status = 'reserved' then
       return query select true, existing.reserved_seconds,
         greatest(
           0,
-          (select included_seconds - used_seconds - reserved_seconds
-           from public.subscriptions where user_id = p_user_id)
+          (select s.included_seconds - s.used_seconds - s.reserved_seconds
+           from public.subscriptions s where s.user_id = p_user_id)
         ),
         'already_reserved';
       return;
@@ -141,8 +141,8 @@ begin
   end if;
 
   select * into sub
-  from public.subscriptions
-  where user_id = p_user_id
+  from public.subscriptions s
+  where s.user_id = p_user_id
   for update;
 
   if not found then
@@ -155,7 +155,10 @@ begin
     return;
   end if;
 
-  remaining := greatest(0, coalesce(sub.included_seconds, 0) - coalesce(sub.used_seconds, 0) - coalesce(sub.reserved_seconds, 0));
+  remaining := greatest(
+    0,
+    coalesce(sub.included_seconds, 0) - coalesce(sub.used_seconds, 0) - coalesce(sub.reserved_seconds, 0)
+  );
   if remaining <= 0 then
     return query select false, 0, 0, 'quota_exhausted';
     return;
@@ -169,10 +172,10 @@ begin
     p_user_id, p_business_id, p_vapi_call_id, to_reserve, 'reserved'
   );
 
-  update public.subscriptions
-  set reserved_seconds = coalesce(reserved_seconds, 0) + to_reserve,
+  update public.subscriptions s
+  set reserved_seconds = coalesce(s.reserved_seconds, 0) + to_reserve,
       updated_at = now()
-  where user_id = p_user_id;
+  where s.user_id = p_user_id;
 
   return query select true, to_reserve, remaining - to_reserve, 'ok';
 end;
@@ -199,8 +202,8 @@ begin
   billed := greatest(0, coalesce(p_billed_seconds, 0));
 
   select * into usage
-  from public.call_usage
-  where vapi_call_id = p_vapi_call_id
+  from public.call_usage cu
+  where cu.vapi_call_id = p_vapi_call_id
   for update;
 
   if not found then
@@ -223,18 +226,18 @@ begin
   -- Cap billed to what was reserved for this call (prevents over-billing one reservation)
   billed := least(billed, usage.reserved_seconds);
 
-  update public.call_usage
+  update public.call_usage cu
   set status = 'committed',
       billed_seconds = billed,
-      call_id = coalesce(p_call_id, call_id),
+      call_id = coalesce(p_call_id, cu.call_id),
       updated_at = now()
-  where vapi_call_id = p_vapi_call_id;
+  where cu.vapi_call_id = p_vapi_call_id;
 
-  update public.subscriptions
-  set reserved_seconds = greatest(0, coalesce(reserved_seconds, 0) - usage.reserved_seconds),
-      used_seconds = coalesce(used_seconds, 0) + billed,
+  update public.subscriptions s
+  set reserved_seconds = greatest(0, coalesce(s.reserved_seconds, 0) - usage.reserved_seconds),
+      used_seconds = coalesce(s.used_seconds, 0) + billed,
       updated_at = now()
-  where user_id = usage.user_id;
+  where s.user_id = usage.user_id;
 
   return query select true, billed, 'ok';
 end;
@@ -255,8 +258,8 @@ declare
   usage public.call_usage%rowtype;
 begin
   select * into usage
-  from public.call_usage
-  where vapi_call_id = p_vapi_call_id
+  from public.call_usage cu
+  where cu.vapi_call_id = p_vapi_call_id
   for update;
 
   if not found then
@@ -269,14 +272,14 @@ begin
     return;
   end if;
 
-  update public.call_usage
+  update public.call_usage cu
   set status = 'released', updated_at = now()
-  where vapi_call_id = p_vapi_call_id;
+  where cu.vapi_call_id = p_vapi_call_id;
 
-  update public.subscriptions
-  set reserved_seconds = greatest(0, coalesce(reserved_seconds, 0) - usage.reserved_seconds),
+  update public.subscriptions s
+  set reserved_seconds = greatest(0, coalesce(s.reserved_seconds, 0) - usage.reserved_seconds),
       updated_at = now()
-  where user_id = usage.user_id;
+  where s.user_id = usage.user_id;
 
   return query select true, 'released';
 end;

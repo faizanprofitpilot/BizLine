@@ -125,6 +125,16 @@
   .animate-flow-pulse {
     animation: flow-pulse 2s ease-in-out infinite;
   }
+  .animate-console-ken {
+    animation: console-ken 5.2s ease-out both;
+  }
+  .animate-console-progress {
+    animation: console-progress linear both;
+  }
+  .animate-console-progress-paused {
+    animation: console-progress linear both;
+    animation-play-state: paused;
+  }
 }
 
 @keyframes fade-up {
@@ -145,6 +155,24 @@
   }
   50% {
     opacity: 0.55;
+  }
+}
+
+@keyframes console-ken {
+  from {
+    transform: scale(1.03);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes console-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }
 

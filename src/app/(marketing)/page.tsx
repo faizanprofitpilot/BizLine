@@ -243,7 +243,7 @@ export default function MarketingHomePage() {
       </section>
 
       {/* Product preview */}
-      <section className="bg-[#18181B] py-24 text-white">
+      <section id="product" className="bg-[#18181B] py-24 text-white">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-widest text-primary">

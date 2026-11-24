@@ -1,30 +1,38 @@
 # BizLine Sale-Readiness Report
 
-**Audit / implementation update:** 24 Nov 2026  
+**Audit / verification update:** 24 Nov 2026  
 **Production URL:** https://getbizline.xyz  
+**Production deploy:** `dpl_8y6TzaJNMw1QAC3Q6Y7czVcn2TNR` (aliased)
 
 ---
 
 ## Verdict
 
-**GO WITH DISCLOSURES** — product/usage controls are live; **Stripe live cutover is not complete**
+**GO WITH DISCLOSURES** — live Stripe, Resend, and minute enforcement are verified in Production. Flippa listing still needs Loom URL + auction field entry (seller).
 
-### Verified 24 Nov 2026 (post seller credential update)
+### Verified 24 Nov 2026 (live cutover)
 
 | Integration | Result | Notes |
 |-------------|--------|-------|
 | Resend domain `getbizline.xyz` | **PASS** | status=`verified` |
 | `RESEND_FROM_EMAIL` | **PASS** | `BizLine <notifications@getbizline.xyz>` |
 | Resend delivery (external Gmail) | **PASS** | API `last_event=delivered` |
-| Live Stripe products Starter $49 / Growth $149 | **PASS** | Live prices exist and match |
-| Live Stripe Pro $399 | **FAIL in `.env.local`** | `STRIPE_PRICE_PRO` points to **BizDial Pro $999**, not BizLine Pro $399 |
-| `STRIPE_SECRET_KEY` live | **FAIL in `.env.local`** | Still `sk_test_…` (no `sk_live_` present) |
-| Live webhook `getbizline.xyz/api/stripe/webhook` | **PASS** | enabled in live mode with required events |
-| Stripe env sync to Vercel Production | **BLOCKED** | Would not publish `sk_test_` or wrong Pro price as “live” |
-| Minute enforcement RPCs | **PASS** | `reserve/commit/release_call_usage` present |
-| Demo `+15513105356` | **PASS** | `is_demo=true`, active, still on homepage |
+| Live Stripe account | **PASS** | PROFITPILOT LLC; charges/payouts enabled |
+| Live Stripe Starter $49 | **PASS** | product `BizLine Starter`, monthly USD |
+| Live Stripe Growth $149 | **PASS** | product `BizLine Growth`, monthly USD |
+| Live Stripe Pro $399 | **PASS** | product `BizLine Pro`, monthly USD (not BizDial) |
+| `STRIPE_SECRET_KEY` live | **PASS** | `sk_live_…` in `.env.local` + Vercel Production |
+| `STRIPE_WEBHOOK_SECRET` | **PASS** | signed `ping` → Production `/api/stripe/webhook` returned 200; bad sig → 400 |
+| Live webhook endpoint | **PASS** | `https://getbizline.xyz/api/stripe/webhook` enabled; required events present |
+| Stripe env sync → Vercel Production | **PASS** | secret + 3 price IDs + webhook secret updated; redeployed |
+| Live Checkout session create | **PASS** | `cs_live_…` for $49 / $149 / $399; sessions expired (no card charge) |
+| Billing portal session | **PASS** | `bps_…` livemode URL created |
+| Subscription cancel path | **PASS** | 1-day trial sub created + canceled (`trialing` → `canceled`); no card charged |
+| Webhook processing | **PASS** | `customer.subscription.created` / `deleted`, `invoice.paid` ($0 trial), and verify `ping` recorded in `stripe_webhook_events` |
+| Minute enforcement RPCs | **PASS** | `reserve` / `commit` / `release` + `quota_exhausted` verified after `0003` fix |
+| Demo `+15513105356` | **PASS** | `assistants.is_demo=true`, active |
 
-**Required before live Checkout:** put `sk_live_…` in `.env.local`, set `STRIPE_PRICE_PRO` to the live BizLine Pro **$399** price (not BizDial), put the live webhook signing secret in `STRIPE_WEBHOOK_SECRET`, then re-run Production env sync.
+**Card charges:** not run (no approval). Verification used Checkout session create/expire, portal sessions, and a no-PM trial cancel only.
 
 ---
 
@@ -53,6 +61,8 @@ Safer defaults shipped (override with `PLAN_MINUTES_*`):
 
 **Demo line** `+15513105356` is flagged `is_demo=true` and bypasses paid quota (does not grant Pro to other accounts).
 
+**Fix applied 24 Nov 2026:** `0003_fix_usage_rpc_ambiguity.sql` — PL/pgSQL out-param vs column ambiguity on `reserved_seconds` broke live `reserve_call_usage`; patched in Production.
+
 **Limitation:** Hard mid-call disconnect beyond `maxDurationSeconds` depends on Vapi honoring `assistantOverrides.maxDurationSeconds`. Overages within that cap are still billed against reserved seconds.
 
 ---
@@ -70,15 +80,20 @@ Safer defaults shipped (override with `PLAN_MINUTES_*`):
 
 - `0001_init.sql` (existing)
 - `0002_usage_billing_security.sql` (**applied** to production Supabase `awvthjselptzvatfisus`)
+- `0003_fix_usage_rpc_ambiguity.sql` (**applied** 24 Nov 2026)
 
 ---
 
 ## Testing
 
 - Unit tests: `npm test` (plan allowlist, remaining seconds, Stripe shape helpers) — pass
-- Lint / `tsc` / `next build` — pass
-- Live card charge — **not run** (requires your approval)
-- Physical inbound quota rejection — **not claimed** without a controlled test call after live deploy + phone routing sync
+- Lint / `tsc` / `next build` — pass (prior)
+- Live Checkout URL creation — **PASS** (no payment completed)
+- Live portal + trial cancel — **PASS** (no card charged)
+- Webhook signature + event ingest — **PASS**
+- Resend external delivery — **PASS**
+- Live card charge — **not run** (requires approval)
+- Physical inbound quota rejection call — **not claimed** without a controlled test call
 
 ---
 

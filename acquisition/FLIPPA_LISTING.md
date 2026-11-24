@@ -25,7 +25,7 @@ BizLine is a multi-tenant SaaS that gives small businesses an AI phone reception
 
 BizLine helps local and service businesses answer the phone when they cannot. A business owner signs up, pays for a plan, submits their website, reviews AI-generated knowledge (hours, services, FAQs), launches an AI receptionist, and gets a dedicated US phone number. Callers reach the AI assistant; owners see call history in a dashboard and can receive summary emails.
 
-The product is deployed and usable end-to-end for signup → subscription (currently Stripe **test** mode in the seller’s demo environment) → onboarding → number provisioning → inbound AI answering → post-call artifacts.
+The product is deployed and usable end-to-end for signup → subscription (seller Production uses Stripe **live** mode with BizLine $49 / $149 / $399 prices) → onboarding → number provisioning → inbound AI answering → post-call artifacts. Buyer should still recreate Stripe under their own account after purchase.
 
 ### What is included
 
@@ -45,8 +45,8 @@ The product is deployed and usable end-to-end for signup → subscription (curre
 - No proven market traction or fabricated social proof
 - No calendar booking, number porting, multi-location franchise console, or website chatbot
 - Automated after-hours routing is **not** a separate product feature beyond “AI always answers the BizLine number”
-- Stripe on the current demo site may still be in **test** mode — buyer should configure **live** Stripe under their account
-- Resend on the current demo is limited until a sending domain is verified
+- Seller Production Stripe is **live** (BizLine prices); buyer must still configure **their own** live Stripe products, prices, and webhooks after transfer
+- Seller Production Resend domain `getbizline.xyz` is verified; buyer must verify sending under their own Resend account / domain after transfer
 
 ### Live marketing site (aligned Nov 2026)
 
@@ -117,8 +117,8 @@ Buyer due diligence tip: create your own trial account after purchase under your
 ## Disclosures (copy into listing)
 
 1. **Pre-revenue.** No paying customers or MRR.  
-2. **Stripe:** Seller demo has used **test** mode; buyer must set up live Stripe products, prices, and webhooks.  
-3. **Email:** Production-grade delivery requires a **verified Resend (or other) domain**; seller demo may be limited to account-owner recipients.  
+2. **Stripe:** Seller Production is on **live** mode with BizLine Starter/Growth/Pro prices; buyer must recreate products, prices, webhook, and keys under **their** Stripe account (seller keys will be revoked).  
+3. **Email:** Seller Production uses verified Resend domain `getbizline.xyz`; buyer must verify their own sending domain after transfer.  
 4. **Minutes / usage:** Included minutes are enforced via Vapi `assistant-request` + atomic DB reservations. Defaults are 100 / 300 / 1,000 (safer than the original 100 / 500 / 2,000 marketing proposal).  
 5. **Number lifecycle:** Canceling a subscription does not auto-release Twilio numbers.  
 6. **Transfer model:** Most vendor accounts are **recreated** under the buyer, not “handed over” as shared logins. Domain + GitHub transfer as agreed.  
@@ -140,7 +140,7 @@ A: Domain transfer is part of the negotiated closing deliverables.
 A: Typically no without Twilio porting / account transfer paperwork. Plan to provision new numbers under your Twilio account; migrate any must-keep numbers separately.
 
 **Q: Is Stripe live?**  
-A: Configure live mode under your Stripe account. Do not assume seller keys or test prices carry over.
+A: Yes on the seller’s current Production demo (live prices + webhook verified). After purchase, configure live mode under **your** Stripe account — do not reuse seller keys.
 
 **Q: What’s the monthly burn with zero users?**  
 A: Mostly fixed/platform minimums (domain, optional Supabase Pro, idle Vercel). With users, Twilio number rental + per-minute voice dominate. See `acquisition/READINESS_REPORT.md` Phase 6.
@@ -149,7 +149,7 @@ A: Mostly fixed/platform minimums (domain, optional Supabase Pro, idle Vercel). 
 A: Source is included; branding and domain are yours after transfer. No formal white-label multi-tenant agency layer is built.
 
 **Q: Any tech debt that blocks launch?**  
-A: Core path works. Main commercial gaps are Stripe live cutover, Resend domain verification, minute enforcement, and Twilio release-on-cancel — all disclosed.
+A: Core path works on Production (live Stripe, verified Resend, minute enforcement). Remaining disclosed gaps: Twilio release-on-cancel not automated; buyer must recreate vendor accounts after transfer.
 
 ---
 

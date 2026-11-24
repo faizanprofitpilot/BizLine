@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -27,10 +27,8 @@ export function DashboardMockup() {
   const [paused, setPaused] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [progressKey, setProgressKey] = useState(0);
-
-  const onTick = useEffectEvent(() => {
-    setIndex((current) => (current + 1) % SLIDES.length);
-  });
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -43,7 +41,10 @@ export function DashboardMockup() {
   useEffect(() => {
     if (paused || reduceMotion) return;
     setProgressKey((key) => key + 1);
-    const id = window.setInterval(() => onTick(), INTERVAL_MS);
+    const id = window.setInterval(() => {
+      if (pausedRef.current) return;
+      setIndex((current) => (current + 1) % SLIDES.length);
+    }, INTERVAL_MS);
     return () => window.clearInterval(id);
   }, [paused, reduceMotion, index]);
 
@@ -121,7 +122,7 @@ export function DashboardMockup() {
                   "absolute inset-0 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   selected
                     ? "z-10 opacity-100 scale-100"
-                    : "z-0 opacity-0 scale-[1.02] pointer-events-none"
+                    : "z-0 pointer-events-none scale-[1.02] opacity-0"
                 )}
                 aria-hidden={!selected}
               >

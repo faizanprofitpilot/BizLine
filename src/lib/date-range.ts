@@ -41,7 +41,7 @@ export function parseDateRange(params: {
       const toLabel = end.toLocaleDateString();
       return {
         key: "custom",
-        label: `${fromLabel} – ${toLabel}`,
+        label: `${fromLabel} - ${toLabel}`,
         start,
         end,
       };

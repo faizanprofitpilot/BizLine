@@ -90,29 +90,39 @@ const plans = [
   {
     name: "Starter",
     price: "$49",
-    minutes: "100 minutes / month",
+    blurb: "For lighter inbound call volume",
     priceId: () => env.stripe.priceStarter(),
-    features: ["AI receptionist", "Call summaries", "Email notifications"],
+    features: [
+      "1 AI receptionist",
+      "1 dedicated phone number",
+      "Call summaries & transcripts",
+      "Email notifications",
+      "Dashboard call history",
+    ],
     highlight: false,
   },
   {
     name: "Growth",
     price: "$149",
-    minutes: "500 minutes / month",
+    blurb: "For growing businesses with more inbound calls",
     priceId: () => env.stripe.priceGrowth(),
     features: [
       "Everything in Starter",
-      "Priority support",
-      "Advanced call insights",
+      "Same receptionist, number, and dashboard",
+      "Built for steadier day-to-day call volume",
     ],
     highlight: true,
   },
   {
     name: "Pro",
     price: "$399",
-    minutes: "2,000 minutes / month",
+    blurb: "For higher call volume businesses",
     priceId: () => env.stripe.pricePro(),
-    features: ["Everything in Growth", "High volume lines", "Dedicated onboarding"],
+    features: [
+      "Everything in Starter",
+      "Same receptionist, number, and dashboard",
+      "Built for busier phone lines",
+    ],
     highlight: false,
   },
 ];
@@ -204,7 +214,7 @@ export default async function BillingPage({
               {plan.price}
               <span className="text-base font-normal text-muted-foreground">/mo</span>
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">{plan.minutes}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{plan.blurb}</p>
             <ul className="mt-6 flex-1 space-y-2">
               {plan.features.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">

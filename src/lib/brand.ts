@@ -1,4 +1,4 @@
-/** Brand tokens — single source for marketing + dashboard */
+/** Brand tokens - single source for marketing + dashboard */
 export const brand = {
   bg: "#F8F4ED",
   card: "#FFFDF9",

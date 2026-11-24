@@ -67,7 +67,7 @@ export default async function OnboardingStartPage({
             </div>
 
             <Button type="submit" size="lg" className="mt-2 w-full">
-              Continue — learn my business
+              Continue - learn my business
             </Button>
           </form>
         </Card>

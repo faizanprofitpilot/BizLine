@@ -1,10 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Bell,
   BookOpen,
-  Calendar,
   Check,
+  ClipboardList,
   FileText,
   Mail,
   MessageSquare,
@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 
 import { DashboardMockup } from "@/components/marketing/dashboard-mockup";
-import { HeroFlowVisual } from "@/components/marketing/hero-flow-visual";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,7 +32,7 @@ const steps = [
   {
     n: "03",
     title: "Generate phone number",
-    body: "Provision a dedicated line wired to your assistant—no hardware required.",
+    body: "Provision a dedicated line wired to your assistant. No hardware required.",
   },
   {
     n: "04",
@@ -60,13 +59,13 @@ const features = [
   },
   {
     title: "Business knowledge",
-    desc: "Onboarding pulls from your website—you review and edit before going live.",
+    desc: "Onboarding pulls from your website. You review and edit before going live.",
     icon: BookOpen,
   },
   {
-    title: "Lead & booking capture",
-    desc: "Calls are classified so you can spot leads and appointment requests quickly.",
-    icon: Calendar,
+    title: "Lead & inquiry capture",
+    desc: "Calls are classified so you can spot leads and appointment inquiries quickly.",
+    icon: ClipboardList,
   },
   {
     title: "Email notifications",
@@ -79,7 +78,7 @@ const plans = [
   {
     name: "Starter",
     price: "$49",
-    minutes: "100 minutes / month",
+    blurb: "For lighter inbound call volume",
     highlight: false,
     features: [
       "1 AI receptionist",
@@ -93,23 +92,23 @@ const plans = [
   {
     name: "Growth",
     price: "$149",
-    minutes: "500 minutes / month",
+    blurb: "For growing businesses with more inbound calls",
     highlight: true,
     features: [
       "Everything in Starter",
-      "5× more included minutes",
       "Same receptionist, number, and dashboard",
+      "Built for steadier day-to-day call volume",
     ],
   },
   {
     name: "Pro",
     price: "$399",
-    minutes: "2,000 minutes / month",
+    blurb: "For higher call volume businesses",
     highlight: false,
     features: [
       "Everything in Starter",
-      "20× more included minutes",
-      "Built for higher call volume",
+      "Same receptionist, number, and dashboard",
+      "Built for busier phone lines",
     ],
   },
 ];
@@ -120,19 +119,30 @@ export default function MarketingHomePage() {
       <MarketingHeader />
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(249,115,22,0.12),transparent)]" />
-        <div className="mx-auto grid min-h-[calc(100dvh-4rem)] max-w-7xl items-center gap-16 px-6 py-16 lg:grid-cols-2 lg:gap-12 lg:px-10 lg:py-24">
+      <section className="relative isolate overflow-hidden bg-[#F7F1E8]">
+        <Image
+          src="/hero-bg.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-contain object-center scale-90 sm:scale-95 md:object-right md:scale-100"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#F7F1E8] via-[#F7F1E8]/75 to-transparent md:via-[#F7F1E8]/55" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent" />
+
+        <div className="relative mx-auto flex min-h-[calc(100dvh-4rem)] max-w-7xl items-center px-6 py-20 lg:px-10 lg:py-28">
           <div className="max-w-xl">
-            <p className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-soft">
-              <Bell className="size-4 text-primary" />
-              AI phone receptionist for small business
+            <p className="animate-fade-up font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+              BizLine
             </p>
-            <h1 className="animate-fade-up-delay-1 font-display text-[2.75rem] font-semibold leading-[1.05] tracking-tight text-foreground sm:text-6xl lg:text-[4.25rem]">
+            <h1 className="animate-fade-up-delay-1 mt-5 font-display text-[2.5rem] font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               Never miss another customer call.
             </h1>
             <p className="animate-fade-up-delay-2 mt-6 text-lg leading-relaxed text-muted-foreground sm:text-xl">
-              Turn your website into a 24/7 AI receptionist in under 2 minutes.
+              Paste your website. Get a dedicated business phone number with an
+              AI receptionist that answers calls 24/7. Prefer to keep your existing
+              number? Forward it to your BizLine line through your phone provider.
             </p>
             <div className="animate-fade-up-delay-3 mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link href="/signup" className={cn(buttonVariants({ size: "xl" }))}>
@@ -144,12 +154,9 @@ export default function MarketingHomePage() {
                 className={cn(buttonVariants({ variant: "outline", size: "xl" }))}
               >
                 <Play className="size-4" />
-                Watch demo
+                See how it works
               </Link>
             </div>
-          </div>
-          <div className="animate-fade-up-delay-2 lg:justify-self-end">
-            <HeroFlowVisual />
           </div>
         </div>
       </section>
@@ -205,7 +212,7 @@ export default function MarketingHomePage() {
                     <Card className="ml-auto max-w-sm p-5">
                       <p className="text-sm font-medium">New call summary</p>
                       <p className="mt-2 text-xs text-muted-foreground">
-                        Appointment request — caller interested in consultation.
+                        Inquiry - caller asked about availability and left a callback number.
                       </p>
                     </Card>
                   )}
@@ -227,7 +234,7 @@ export default function MarketingHomePage() {
               An operations console you&apos;ll love opening
             </h2>
             <p className="mt-4 text-lg text-white/60">
-              Calls, leads, and transcripts in one warm, focused workspace—built for
+              Calls, transcripts, and summaries in one focused workspace, built for
               owners, not engineers.
             </p>
           </div>
@@ -295,7 +302,7 @@ export default function MarketingHomePage() {
                 {plan.price}
                 <span className="text-base font-normal text-muted-foreground">/mo</span>
               </p>
-              <p className="mt-2 text-sm text-muted-foreground">{plan.minutes}</p>
+              <p className="mt-2 text-sm text-muted-foreground">{plan.blurb}</p>
               <ul className="mt-6 flex-1 space-y-2.5">
                 {plan.features.map((feature) => (
                   <li
@@ -332,8 +339,8 @@ export default function MarketingHomePage() {
             Your next customer is calling. Answer every time.
           </h2>
           <p className="relative mx-auto mt-4 max-w-xl text-lg text-white/85">
-            Launch your AI receptionist tonight. No hardware. No hold music. Just
-            results.
+            Launch your AI receptionist today. No hardware required. Just a
+            dedicated number that answers for your business.
           </p>
           <Link
             href="/signup"

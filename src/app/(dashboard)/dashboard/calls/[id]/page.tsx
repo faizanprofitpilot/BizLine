@@ -35,7 +35,7 @@ export default async function CallDetailPage({
 
   const durationMin = call.duration
     ? `${Math.max(1, Math.round(call.duration / 60))} min`
-    : "—";
+    : "-";
 
   return (
     <DashboardPage

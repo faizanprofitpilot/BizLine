@@ -51,7 +51,7 @@ export default async function CallsPage({
   return (
     <DashboardPage
       title="Calls"
-      description="Every conversation—summarized, classified, and ready to review."
+      description="Every conversation: summarized, classified, and ready to review."
     >
       <div className="mb-6">
         <DateRangeFilter
@@ -96,7 +96,7 @@ export default async function CallsPage({
                             aria-label="Recording available"
                           />
                         ) : null}
-                        <span className="truncate">{c.summary ?? "—"}</span>
+                        <span className="truncate">{c.summary ?? "-"}</span>
                       </span>
                     </td>
                   </CallTableRow>

@@ -83,7 +83,7 @@ export default async function DashboardHomePage({
   return (
     <DashboardPage
       title="Overview"
-      description="Your receptionist at a glance—calls, leads, and line status."
+      description="Your receptionist at a glance: calls, leads, and line status."
       action={
         !assistant?.twilio_phone_number ? (
           <Link

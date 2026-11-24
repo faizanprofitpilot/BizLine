@@ -17,7 +17,7 @@ const STEP_COPY: Record<OnboardingStep, { title: string; description: string }> 
   1: {
     title: "Set up your receptionist",
     description:
-      "Paste your website or Google Business Profile—we'll learn your business in seconds.",
+      "Paste your website or Google Business Profile. We'll learn your business in seconds.",
   },
   2: {
     title: "Your AI receptionist profile",

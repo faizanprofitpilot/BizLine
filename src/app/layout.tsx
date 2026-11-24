@@ -21,9 +21,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bizline — AI Phone Receptionist",
+  title: "Bizline - AI Phone Receptionist",
   description:
-    "Turn your website into a 24/7 AI receptionist in under 2 minutes. Never miss another customer call.",
+    "Turn your website into a 24/7 AI receptionist with a dedicated business phone number. Never miss another customer call.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

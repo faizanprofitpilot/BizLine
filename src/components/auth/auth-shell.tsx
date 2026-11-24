@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { BrandLogo } from "@/components/brand-logo";
 
 export function AuthShell({
@@ -23,14 +21,15 @@ export function AuthShell({
         />
         <div className="relative max-w-md">
           <p className="font-display text-4xl font-semibold leading-tight tracking-tight text-white">
-            Every call answered. Every lead captured.
+            Every call answered. Every inquiry logged.
           </p>
           <p className="mt-4 text-lg text-white/55">
-            Your AI receptionist learns from your website and goes live in minutes.
+            Your AI receptionist learns from your website and goes live on a
+            dedicated business number.
           </p>
         </div>
         <p className="relative text-sm text-white/35">
-          Trusted by thousands of small businesses
+          Dedicated AI phone line for your business
         </p>
       </aside>
 

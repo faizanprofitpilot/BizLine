@@ -57,7 +57,7 @@ export function DateRangeFilter({
           className="h-9 w-full sm:w-[10.5rem]"
           aria-label="From date"
         />
-        <span className="hidden text-muted-foreground sm:inline">–</span>
+        <span className="hidden text-muted-foreground sm:inline">-</span>
         <Input
           type="date"
           name="to"

@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 import { getStripe } from "@/lib/server/stripe";
 import { env } from "@/lib/server/env";
+import { assertAllowedPriceId } from "@/lib/server/plans";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   const stripe = getStripe();
@@ -21,8 +23,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing priceId" }, { status: 400 });
   }
 
-  // Get or create the Stripe customer for this user
-  const { data: subRow } = await supabase
+  let plan;
+  try {
+    plan = assertAllowedPriceId(priceId);
+  } catch {
+    return NextResponse.json({ error: "Invalid price" }, { status: 400 });
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data: subRow } = await admin
     .from("subscriptions")
     .select("stripe_customer_id")
     .eq("user_id", user.id)
@@ -36,25 +45,34 @@ export async function POST(request: Request) {
     });
     customerId = customer.id;
 
-    await supabase.from("subscriptions").upsert(
+    await admin.from("subscriptions").upsert(
       {
         user_id: user.id,
         stripe_customer_id: customerId,
         status: "incomplete",
+        plan,
       },
       { onConflict: "user_id" }
     );
   }
 
-  // Stripe docs: create a Checkout Session in subscription mode.
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${env.appUrl()}/dashboard/billing?success=1&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${env.appUrl()}/dashboard/billing?canceled=1`,
+    metadata: {
+      supabase_user_id: user.id,
+      plan,
+    },
+    subscription_data: {
+      metadata: {
+        supabase_user_id: user.id,
+        plan,
+      },
+    },
   });
 
   return NextResponse.json({ url: session.url });
 }
-

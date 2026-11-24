@@ -84,11 +84,12 @@ const plans = [
   {
     name: "Starter",
     price: "$49",
-    blurb: "For lighter inbound call volume",
+    blurb: "100 included minutes / month",
     highlight: false,
     features: [
       "1 AI receptionist",
       "1 dedicated phone number",
+      "100 AI call minutes / month",
       "Website or Google Business onboarding",
       "Call summaries & full transcripts",
       "Email notification per call",
@@ -98,22 +99,22 @@ const plans = [
   {
     name: "Growth",
     price: "$149",
-    blurb: "For growing businesses with more inbound calls",
+    blurb: "300 included minutes / month",
     highlight: true,
     features: [
       "Everything in Starter",
+      "300 AI call minutes / month",
       "Same receptionist, number, and dashboard",
-      "Built for steadier day-to-day call volume",
     ],
   },
   {
     name: "Pro",
     price: "$399",
-    blurb: "For higher call volume businesses",
+    blurb: "1,000 included minutes / month",
     highlight: false,
     features: [
       "Everything in Starter",
-      "Same receptionist, number, and dashboard",
+      "1,000 AI call minutes / month",
       "Built for busier phone lines",
     ],
   },

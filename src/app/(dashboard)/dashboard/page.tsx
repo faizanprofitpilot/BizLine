@@ -12,10 +12,12 @@ import {
 import { DateRangeFilter } from "@/components/dashboard/date-range-filter";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { ProvisionButton } from "@/components/dashboard/provision-button";
+import { UsageMeter } from "@/components/dashboard/usage-meter";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { buildDateRangeQuery, parseDateRange } from "@/lib/date-range";
 import { formatPhoneNumber } from "@/lib/format-phone";
+import { getUsageSnapshot } from "@/lib/server/usage";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +74,7 @@ export default async function DashboardHomePage({
     callList.reduce((sum, c) => sum + (c.duration ?? 0), 0) / 60
   );
   const activeNumber = assistant?.twilio_phone_number ?? null;
+  const usage = await getUsageSnapshot(user!.id);
 
   const recent = [...callList]
     .sort(
@@ -102,6 +105,10 @@ export default async function DashboardHomePage({
           from={from}
           to={to}
         />
+      </div>
+
+      <div className="mb-8">
+        <UsageMeter usage={usage} />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">

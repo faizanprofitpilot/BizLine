@@ -52,10 +52,10 @@ Optional: [`supabase/scripts/grant-pro-plan.sql`](../supabase/scripts/grant-pro-
 4. Set `APP_URL=https://YOUR_DOMAIN`.  
 5. Deploy; attach custom domain; fix DNS.
 
-### 2.3 Stripe
+### 2.3 Stripe (buyer’s own account — not transferable)
 
-1. Create three recurring monthly Prices matching Starter / Growth / Pro (or your pricing).  
-2. Put Price IDs in `STRIPE_PRICE_*`.  
+1. Create three live recurring monthly Prices: Starter $49, Growth $149, Pro $399.  
+2. Put Price IDs in `STRIPE_PRICE_STARTER` / `_GROWTH` / `_PRO` (server allowlists these).  
 3. Webhook endpoint: `https://YOUR_DOMAIN/api/stripe/webhook`  
 4. Events:  
    - `checkout.session.completed`  
@@ -65,7 +65,10 @@ Optional: [`supabase/scripts/grant-pro-plan.sql`](../supabase/scripts/grant-pro-
    - `invoice.paid`  
    - `invoice.payment_failed`  
 5. Put signing secret in `STRIPE_WEBHOOK_SECRET`.  
-6. Use **live** keys for real customers.
+6. Use **live** secret key (`sk_live_…`) for real customers; keep `sk_test_…` for local.  
+7. Optional minute overrides: `PLAN_MINUTES_STARTER`, `PLAN_MINUTES_GROWTH`, `PLAN_MINUTES_PRO` (defaults 100 / 300 / 1000).  
+
+Run migrations including `0002_usage_billing_security.sql` so usage RPCs and subscription RLS hardening exist.
 
 ### 2.4 Voice stack
 
@@ -78,7 +81,11 @@ Optional: [`supabase/scripts/grant-pro-plan.sql`](../supabase/scripts/grant-pro-
 
 - OpenAI key (onboarding + call classification)  
 - Firecrawl key (website scrape)  
-- Resend key + verified domain FROM address  
+- Resend key + **verified domain** FROM address (e.g. `BizLine <notifications@yourdomain.com>`)  
+
+### 2.6 Usage enforcement
+
+Inbound numbers must use Vapi **assistant-request** (no static assistant on the phone number). Provisioning does this automatically. After cutover, re-save / re-provision existing numbers so routing hits `/api/vapi/webhook`.  
 
 ---
 

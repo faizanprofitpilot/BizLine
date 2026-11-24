@@ -27,7 +27,8 @@ export async function middleware(request: NextRequest) {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      const isActive = subRow?.status === "active";
+      const isActive =
+        subRow?.status === "active" || subRow?.status === "trialing";
       if (!isActive) {
         const url = request.nextUrl.clone();
         url.pathname = "/dashboard/billing";

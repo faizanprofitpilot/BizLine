@@ -5,6 +5,10 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getTwilio } from "@/lib/server/twilio";
 import { getVapi } from "@/lib/server/vapi";
 import { env } from "@/lib/server/env";
+import { isPaidSubscriptionStatus } from "@/lib/server/plans";
+import { ensurePhoneNumberUsesAssistantRequest } from "@/lib/server/phone-routing";
+import { isDemoPhoneNumber } from "@/lib/server/usage";
+import { vapiWebhookServerConfig } from "@/lib/server/vapi-webhook";
 
 export async function POST() {
   const supabase = await createSupabaseServerClient();
@@ -14,18 +18,17 @@ export async function POST() {
 
   if (!user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Enforce hard paywall server-side as well.
-  const { data: subRow } = await supabase
+  const supabaseAdmin = createSupabaseAdminClient();
+  const { data: subRow } = await supabaseAdmin
     .from("subscriptions")
     .select("status")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (subRow?.status !== "active") {
+  if (!isPaidSubscriptionStatus(subRow?.status)) {
     return NextResponse.json({ error: "Subscription inactive" }, { status: 402 });
   }
 
-  const supabaseAdmin = createSupabaseAdminClient();
   const { data: business } = await supabaseAdmin
     .from("businesses")
     .select("id, business_name")
@@ -38,7 +41,9 @@ export async function POST() {
 
   const { data: assistantRow } = await supabaseAdmin
     .from("assistants")
-    .select("id, vapi_assistant_id, twilio_sid, twilio_phone_number")
+    .select(
+      "id, vapi_assistant_id, twilio_sid, twilio_phone_number, vapi_phone_number_id"
+    )
     .eq("business_id", business.id)
     .maybeSingle();
 
@@ -47,6 +52,16 @@ export async function POST() {
   }
 
   if (assistantRow.twilio_sid && assistantRow.twilio_phone_number) {
+    try {
+      await ensurePhoneNumberUsesAssistantRequest({
+        businessId: business.id,
+        vapiPhoneNumberId: assistantRow.vapi_phone_number_id,
+        twilioPhoneNumber: assistantRow.twilio_phone_number,
+      });
+    } catch (err) {
+      console.error("Failed to sync phone routing", err);
+    }
+
     return NextResponse.json({
       phoneNumber: assistantRow.twilio_phone_number,
       status: "already_provisioned",
@@ -54,8 +69,6 @@ export async function POST() {
   }
 
   const twilioClient = getTwilio();
-
-  // Twilio docs (AvailablePhoneNumber Local): client.availablePhoneNumbers("US").local.list(...)
   const locals = await twilioClient.availablePhoneNumbers("US").local.list({
     voiceEnabled: true,
     limit: 1,
@@ -66,21 +79,27 @@ export async function POST() {
     return NextResponse.json({ error: "No numbers available" }, { status: 503 });
   }
 
-  // Twilio docs (IncomingPhoneNumbers): client.incomingPhoneNumbers.create({ phoneNumber })
   const purchased = await twilioClient.incomingPhoneNumbers.create({
     phoneNumber: candidate.phoneNumber,
   });
 
   const vapi = getVapi();
+  const server = vapiWebhookServerConfig();
 
-  // Vapi phone number create (Twilio import): POST /phone-number
+  // Do not bind assistantId statically — entitlements checked via assistant-request.
   const phoneNumber = await vapi.phoneNumbers.create({
     provider: "twilio",
     number: candidate.phoneNumber,
     twilioAccountSid: env.twilio.accountSid(),
     twilioAuthToken: env.twilio.authToken(),
-    assistantId: assistantRow.vapi_assistant_id,
     name: business.business_name ? `${business.business_name} Line` : "Business Line",
+    server,
+  });
+
+  await ensurePhoneNumberUsesAssistantRequest({
+    businessId: business.id,
+    vapiPhoneNumberId: phoneNumber.id,
+    twilioPhoneNumber: candidate.phoneNumber,
   });
 
   await supabaseAdmin.from("assistants").upsert(
@@ -89,7 +108,9 @@ export async function POST() {
       vapi_assistant_id: assistantRow.vapi_assistant_id,
       twilio_phone_number: candidate.phoneNumber,
       twilio_sid: purchased.sid,
+      vapi_phone_number_id: phoneNumber.id,
       active: true,
+      is_demo: isDemoPhoneNumber(candidate.phoneNumber),
     },
     { onConflict: "business_id" }
   );
@@ -101,4 +122,3 @@ export async function POST() {
     status: "provisioned",
   });
 }
-

@@ -12,8 +12,10 @@ Only tasks that matter for listing honestly and transferring cleanly. No product
 | 6 | Prepare closing packet: GitHub transfer plan, domain auth code process, env **names** list, revoke seller keys after cutover | P1 | **Mandatory** for closing | 1–2 hr | See [`BUYER_HANDOFF.md`](./BUYER_HANDOFF.md) |
 | 7 | Optional: one inbound diligence call recording (transcript + dashboard screenshot) if Loom omits live call artifacts | P1 | Optional | 20 min | Strengthens trust; not required if Loom covers it |
 | 8 | Optional: verify Resend domain so demo emails work for any buyer email during diligence | P2 | Optional | 30–60 min | Improves demo; not required to list if disclosed |
-| 9 | Optional: switch demo Stripe to live (only with authorization + real prices) | P2 | Optional | 1–2 hr | **Do not** without seller approval; disclosure is enough to list |
-| 10 | Optional: enforce plan minutes / release Twilio number on cancel | P3 | Optional | 4–16 hr | Product gaps; disclose rather than rush before auction |
+| 9 | Create live Stripe BizLine prices + set Vercel `sk_live_` + live webhook secret | P0 | **Mandatory for live payments** | 30–60 min | CLI key lacked `product_write`; needs Dashboard or key permission |
+| 10 | Confirm Resend domain + set `RESEND_FROM_EMAIL=BizLine <notifications@getbizline.xyz>` | P0 | **Mandatory for customer email** | 15–30 min | Prior audit may be stale; verify in Resend Dashboard |
+| 11 | Approve minute allotments (defaults 100/300/1000) or set `PLAN_MINUTES_*` | P1 | Recommended | 10 min | Original 500/2000 likely uneconomic |
+| 12 | Optional: release Twilio number on cancel | P3 | Optional | 2–4 hr | Still not automated |
 | 11 | Optional: commit `acquisition/` docs to GitHub so they travel with the repo | P1 | Recommended | 5 min | Seller decision; not a Flippa UI blocker |
 
 ---

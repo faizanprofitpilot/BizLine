@@ -66,7 +66,10 @@ npx supabase link --project-ref <your-ref>
 npx supabase db push --remote --yes
 ```
 
-Migration file: [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
+Migrations:
+
+- [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
+- [`supabase/migrations/0002_usage_billing_security.sql`](supabase/migrations/0002_usage_billing_security.sql) (usage metering + subscription RLS hardening)
 
 4. Auth URL config (Supabase → Authentication → URL Configuration):
 
@@ -114,8 +117,13 @@ npm run dev
 
    No manual `/credential` setup. Use the **private** Vapi API key.
 
-9. Resend: verify a sending domain and set `RESEND_FROM_EMAIL` accordingly.  
-   For smoke tests only, `BizLine <onboarding@resend.dev>` can send to the Resend account owner.
+9. Resend: verify a sending domain and set `RESEND_FROM_EMAIL` accordingly  
+   (e.g. `BizLine <notifications@yourdomain.com>`).  
+   For smoke tests only, `onboarding@resend.dev` can send to the Resend account owner.
+
+10. Included minutes default to **100 / 300 / 1,000** (Starter / Growth / Pro) and are
+    enforced on inbound calls via Vapi `assistant-request`. Override with
+    `PLAN_MINUTES_STARTER` / `PLAN_MINUTES_GROWTH` / `PLAN_MINUTES_PRO`.
 
 ---
 

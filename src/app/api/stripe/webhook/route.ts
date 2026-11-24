@@ -3,7 +3,11 @@ import { NextResponse } from "next/server";
 
 import { getStripe } from "@/lib/server/stripe";
 import { env } from "@/lib/server/env";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import {
+  recordStripeEventOnce,
+  subscriptionIdFromInvoice,
+  syncSubscriptionFromStripe,
+} from "@/lib/server/stripe-billing";
 
 export async function POST(request: Request) {
   const stripe = getStripe();
@@ -20,65 +24,62 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  const supabaseAdmin = createSupabaseAdminClient();
-
-  async function upsertSubscriptionByCustomer(params: {
-    stripeCustomerId: string;
-    stripeSubscriptionId?: string | null;
-    status?: string | null;
-    plan?: string | null;
-  }) {
-    const { data: existing } = await supabaseAdmin
-      .from("subscriptions")
-      .select("user_id")
-      .eq("stripe_customer_id", params.stripeCustomerId)
-      .maybeSingle();
-
-    if (!existing?.user_id) return;
-
-    await supabaseAdmin.from("subscriptions").upsert(
-      {
-        user_id: existing.user_id,
-        stripe_customer_id: params.stripeCustomerId,
-        stripe_subscription_id: params.stripeSubscriptionId ?? undefined,
-        status: params.status ?? undefined,
-        plan: params.plan ?? undefined,
-      },
-      { onConflict: "user_id" }
-    );
+  const isNew = await recordStripeEventOnce(event.id, event.type);
+  if (!isNew) {
+    return NextResponse.json({ received: true, duplicate: true });
   }
 
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const customer = session.customer;
-      const subscription = session.subscription;
+      const subscriptionId = session.subscription;
 
       if (typeof customer === "string") {
-        await upsertSubscriptionByCustomer({
+        let subscription: Stripe.Subscription | null = null;
+        if (typeof subscriptionId === "string") {
+          subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        }
+        await syncSubscriptionFromStripe({
           stripeCustomerId: customer,
-          stripeSubscriptionId: typeof subscription === "string" ? subscription : null,
-          status: "active",
+          subscription,
+          statusOverride: subscription?.status ?? "active",
         });
       }
       break;
     }
     case "invoice.paid": {
       const invoice = event.data.object as Stripe.Invoice;
-      if (typeof invoice.customer === "string") {
-        await upsertSubscriptionByCustomer({
-          stripeCustomerId: invoice.customer,
-          status: "active",
+      const customer = invoice.customer;
+      const subscriptionId = subscriptionIdFromInvoice(invoice);
+
+      if (typeof customer === "string") {
+        let subscription: Stripe.Subscription | null = null;
+        if (subscriptionId) {
+          subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        }
+        await syncSubscriptionFromStripe({
+          stripeCustomerId: customer,
+          subscription,
+          statusOverride: subscription?.status ?? "active",
         });
       }
       break;
     }
     case "invoice.payment_failed": {
       const invoice = event.data.object as Stripe.Invoice;
-      if (typeof invoice.customer === "string") {
-        await upsertSubscriptionByCustomer({
-          stripeCustomerId: invoice.customer,
-          status: "past_due",
+      const customer = invoice.customer;
+      const subscriptionId = subscriptionIdFromInvoice(invoice);
+
+      if (typeof customer === "string") {
+        let subscription: Stripe.Subscription | null = null;
+        if (subscriptionId) {
+          subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        }
+        await syncSubscriptionFromStripe({
+          stripeCustomerId: customer,
+          subscription,
+          statusOverride: subscription?.status ?? "past_due",
         });
       }
       break;
@@ -87,12 +88,11 @@ export async function POST(request: Request) {
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
       const sub = event.data.object as Stripe.Subscription;
-
       if (typeof sub.customer === "string") {
-        await upsertSubscriptionByCustomer({
+        await syncSubscriptionFromStripe({
           stripeCustomerId: sub.customer,
-          stripeSubscriptionId: sub.id,
-          status: sub.status,
+          subscription: sub,
+          statusOverride: sub.status,
         });
       }
       break;
@@ -103,4 +103,3 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ received: true });
 }
-

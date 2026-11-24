@@ -4,7 +4,9 @@ import { Check } from "lucide-react";
 
 import { DashboardPage } from "@/components/dashboard/dashboard-layout";
 import { env } from "@/lib/server/env";
+import { assertAllowedPriceId, PLAN_CATALOG } from "@/lib/server/plans";
 import { getStripe } from "@/lib/server/stripe";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -17,6 +19,13 @@ async function startCheckoutAction(formData: FormData) {
   const priceId = String(formData.get("priceId") ?? "");
   if (!priceId) redirect("/dashboard/billing?error=Missing%20price");
 
+  let plan;
+  try {
+    plan = assertAllowedPriceId(priceId);
+  } catch {
+    redirect("/dashboard/billing?error=Invalid%20price");
+  }
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -24,7 +33,8 @@ async function startCheckoutAction(formData: FormData) {
 
   if (!user?.id || !user.email) redirect("/login");
 
-  const { data: subRow } = await supabase
+  const admin = createSupabaseAdminClient();
+  const { data: subRow } = await admin
     .from("subscriptions")
     .select("stripe_customer_id")
     .eq("user_id", user.id)
@@ -37,11 +47,12 @@ async function startCheckoutAction(formData: FormData) {
       metadata: { supabase_user_id: user.id },
     });
     customerId = customer.id;
-    await supabase.from("subscriptions").upsert(
+    await admin.from("subscriptions").upsert(
       {
         user_id: user.id,
         stripe_customer_id: customerId,
         status: "incomplete",
+        plan,
       },
       { onConflict: "user_id" }
     );
@@ -53,6 +64,10 @@ async function startCheckoutAction(formData: FormData) {
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${env.appUrl()}/dashboard/billing?success=1&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${env.appUrl()}/dashboard/billing?canceled=1`,
+    metadata: { supabase_user_id: user.id, plan },
+    subscription_data: {
+      metadata: { supabase_user_id: user.id, plan },
+    },
   });
 
   if (!session.url) redirect("/dashboard/billing?error=Missing%20checkout%20url");
@@ -88,13 +103,14 @@ async function openPortalAction() {
 
 const plans = [
   {
-    name: "Starter",
-    price: "$49",
-    blurb: "For lighter inbound call volume",
+    name: PLAN_CATALOG.starter.name,
+    price: PLAN_CATALOG.starter.priceLabel,
+    blurb: `${PLAN_CATALOG.starter.includedMinutes} included minutes / month`,
     priceId: () => env.stripe.priceStarter(),
     features: [
       "1 AI receptionist",
       "1 dedicated phone number",
+      `${PLAN_CATALOG.starter.includedMinutes} AI call minutes / month`,
       "Call summaries & transcripts",
       "Email notifications",
       "Dashboard call history",
@@ -102,25 +118,25 @@ const plans = [
     highlight: false,
   },
   {
-    name: "Growth",
-    price: "$149",
-    blurb: "For growing businesses with more inbound calls",
+    name: PLAN_CATALOG.growth.name,
+    price: PLAN_CATALOG.growth.priceLabel,
+    blurb: `${PLAN_CATALOG.growth.includedMinutes} included minutes / month`,
     priceId: () => env.stripe.priceGrowth(),
     features: [
       "Everything in Starter",
+      `${PLAN_CATALOG.growth.includedMinutes} AI call minutes / month`,
       "Same receptionist, number, and dashboard",
-      "Built for steadier day-to-day call volume",
     ],
     highlight: true,
   },
   {
-    name: "Pro",
-    price: "$399",
-    blurb: "For higher call volume businesses",
+    name: PLAN_CATALOG.pro.name,
+    price: PLAN_CATALOG.pro.priceLabel,
+    blurb: `${PLAN_CATALOG.pro.includedMinutes} included minutes / month`,
     priceId: () => env.stripe.pricePro(),
     features: [
       "Everything in Starter",
-      "Same receptionist, number, and dashboard",
+      `${PLAN_CATALOG.pro.includedMinutes} AI call minutes / month`,
       "Built for busier phone lines",
     ],
     highlight: false,

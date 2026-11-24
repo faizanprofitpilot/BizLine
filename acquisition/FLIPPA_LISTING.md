@@ -60,7 +60,7 @@ Public copy on https://getbizline.xyz now matches product reality:
 
 ### Monetization model
 
-Three monthly SaaS plans (Starter $49 / Growth $149 / Pro $399) billed via Stripe Checkout + Customer Portal. Plan differences on the site are positioning for call volume, not enforced minute caps. Usage costs (Twilio + Vapi + OpenAI) are the buyer’s COGS.
+Three monthly SaaS plans (Starter $49 / Growth $149 / Pro $399) billed via Stripe Checkout + Customer Portal. Included AI call minutes are enforced server-side (defaults 100 / 300 / 1,000). Usage costs (Twilio + Vapi + OpenAI) are the buyer’s COGS.
 
 ### Current revenue and customers
 
@@ -119,7 +119,7 @@ Buyer due diligence tip: create your own trial account after purchase under your
 1. **Pre-revenue.** No paying customers or MRR.  
 2. **Stripe:** Seller demo has used **test** mode; buyer must set up live Stripe products, prices, and webhooks.  
 3. **Email:** Production-grade delivery requires a **verified Resend (or other) domain**; seller demo may be limited to account-owner recipients.  
-4. **Minutes / usage:** The live site no longer advertises included-minute allotments; usage limits are still **not enforced** in application code.  
+4. **Minutes / usage:** Included minutes are enforced via Vapi `assistant-request` + atomic DB reservations. Defaults are 100 / 300 / 1,000 (safer than the original 100 / 500 / 2,000 marketing proposal).  
 5. **Number lifecycle:** Canceling a subscription does not auto-release Twilio numbers.  
 6. **Transfer model:** Most vendor accounts are **recreated** under the buyer, not “handed over” as shared logins. Domain + GitHub transfer as agreed.  
 7. **Missing features** vs some market expectations: no calendar booking, no carrier number porting UI, no multi-location franchise management, no website chatbot, no dedicated “after-hours only” routing product.  

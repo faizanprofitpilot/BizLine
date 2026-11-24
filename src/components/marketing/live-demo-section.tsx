@@ -4,11 +4,12 @@ import { useState } from "react";
 import { Check, Copy, Phone } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
+import {
+  DEMO_PHONE_DISPLAY,
+  DEMO_PHONE_E164,
+  DEMO_SECTION_ID,
+} from "@/lib/demo-phone";
 import { cn } from "@/lib/utils";
-
-export const DEMO_PHONE_DISPLAY = "+1 (551) 310-5356";
-export const DEMO_PHONE_E164 = "+15513105356";
-export const DEMO_SECTION_ID = "live-demo";
 
 export function LiveDemoSection() {
   const [copied, setCopied] = useState(false);

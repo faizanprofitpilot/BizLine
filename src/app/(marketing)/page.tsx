@@ -13,13 +13,15 @@ import {
 } from "lucide-react";
 
 import { DashboardMockup } from "@/components/marketing/dashboard-mockup";
-import {
-  DEMO_SECTION_ID,
-  LiveDemoSection,
-} from "@/components/marketing/live-demo-section";
+import { LiveDemoSection } from "@/components/marketing/live-demo-section";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  DEMO_PHONE_DISPLAY,
+  DEMO_PHONE_E164,
+  DEMO_SECTION_ID,
+} from "@/lib/demo-phone";
 import { cn } from "@/lib/utils";
 
 const steps = [
@@ -153,16 +155,23 @@ export default function MarketingHomePage() {
                 Get started
                 <ArrowRight className="size-4 transition-transform group-hover/button:translate-x-0.5" />
               </Link>
-              <Link
-                href={`#${DEMO_SECTION_ID}`}
+              <a
+                href={`tel:${DEMO_PHONE_E164}`}
                 className={cn(buttonVariants({ variant: "outline", size: "xl" }))}
               >
                 <Phone className="size-4" />
-                Hear how it sounds
-              </Link>
+                {DEMO_PHONE_DISPLAY}
+              </a>
             </div>
             <p className="animate-fade-up-delay-3 mt-4 text-sm text-muted-foreground">
-              Call our live AI demo and hear a real receptionist answer.
+              Hear how it sounds — call our live AI demo, or{" "}
+              <a
+                href={`#${DEMO_SECTION_ID}`}
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                learn more
+              </a>
+              .
             </p>
           </div>
         </div>

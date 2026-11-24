@@ -8,11 +8,15 @@ import {
   FileText,
   Mail,
   MessageSquare,
-  Play,
+  Phone,
   Sparkles,
 } from "lucide-react";
 
 import { DashboardMockup } from "@/components/marketing/dashboard-mockup";
+import {
+  DEMO_SECTION_ID,
+  LiveDemoSection,
+} from "@/components/marketing/live-demo-section";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -150,16 +154,21 @@ export default function MarketingHomePage() {
                 <ArrowRight className="size-4 transition-transform group-hover/button:translate-x-0.5" />
               </Link>
               <Link
-                href="#how-it-works"
+                href={`#${DEMO_SECTION_ID}`}
                 className={cn(buttonVariants({ variant: "outline", size: "xl" }))}
               >
-                <Play className="size-4" />
-                See how it works
+                <Phone className="size-4" />
+                Hear how it sounds
               </Link>
             </div>
+            <p className="animate-fade-up-delay-3 mt-4 text-sm text-muted-foreground">
+              Call our live AI demo and hear a real receptionist answer.
+            </p>
           </div>
         </div>
       </section>
+
+      <LiveDemoSection />
 
       {/* How it works */}
       <section id="how-it-works" className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
